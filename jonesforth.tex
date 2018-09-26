@@ -1,0 +1,8 @@
+.macro PUSHRSP reg
+lea -4(%ebp),%ebp	// push reg on to return stack
+movl \reg,(%ebp)
+.endm
+  
+.macro PUSHRSP reg
+str     \reg, [RSP, #-4]!
+.endm
