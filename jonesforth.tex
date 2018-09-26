@@ -2,7 +2,13 @@
 lea -4(%ebp),%ebp	// push reg on to return stack
 movl \reg,(%ebp)
 .endm
-  
+ 
+DSP     .req    r13
+RSP     .req    r11
+FIP     .req    r10
+
 .macro PUSHRSP reg
 str     \reg, [RSP, #-4]!
 .endm
+
+
