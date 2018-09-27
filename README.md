@@ -9,3 +9,5 @@ So, DUP looks like `03 445550 89C450 ADFFE0` without the 4 byte pointer to the n
 DROP looks like `04 44524F50 58 ADFFE0`.
 
 SWAP `04 53574150 585B5053 ADFFE0`
+
+[x86 MOV](https://c9x.me/x86/html/file_module_x86_id_176.html)
