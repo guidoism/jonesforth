@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+    <head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+	<style>
+	 textarea {display: none}
+	 .submit-code {display: none}
+	</style>
+	
+	<title>Jones Forth Creator</title>
+    </head>
+    <body>
+	<h1>Jones Forth Creator</h1>
+	
+	<div class="container" id="words">
+ 	    <div class="row">
+		<div class="col-sm">
+		    Word
+		</div>
+		<div class="col-sm">
+		    x86 (AT&T Syntax)
+		</div>
+		<div class="col-sm">
+		    x86 (Intel Syntax)
+		</div>
+		<div class="col-sm">
+		    ARMv7
+		</div>
+		<div class="col-sm">
+		    RISC-V 32
+		</div>
+	    </div>
+	</div>
+	
+	<!-- Optional JavaScript -->
+	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+	<script>
+	 $(document).ready(function() {
+	     var words = ['NEXT', 'DROP', 'SWAP', 'DUP']
+	     var syntaxes = ['att', 'intel', 'arm', 'riscv32']
+	     var code = {
+		 "next-att": "lodsl\njmp *(%eax)",
+		 "next-intel": "lodsd\njmp eax",
+		 "next-arm": "ldr r0, [r10], #4\nldr r1, [r0]\nbx r1",
+		 "drop-att": "pop %eax",
+		 "drop-intel": "pop eax",
+		 "swap-att": "pop %eax\npop %ebx\npush %eax\npush %ebx",
+		 "swap-intel": "pop eax\npop ebx\npush eax\npush ebx",
+		 "swap-intel64": "pop rax\npop rbx\npush rax\npush rbx",
+		 "dup-att": "mov (%esp),%eax\npush %eax",
+		 "dup-intel": "mov eax, esp\npush eax",
+	     }
+	     var hex = {
+		 "dup-x86": "89E050",
+		 "drop-x86": "58",
+		 "next-x86": "ADFFE0",
+		 "next-thumb": "5AF8040B01680847",
+		 "swap-x86": "585B5053",
+		 "swap-x64": "585B5053",
+	     }
+	     
+	     for (let w of words) {
+		 let h = `<div class="row"><div class="col-sm">${w}</div>`
+		 for (let s of syntaxes) {
+		     let id = `${w}-${s}`.toLowerCase()
+		     console.log(id)
+		     let c = code[id] || ''
+		     let hide = c != '' ? 'style="display:none"' : ''
+		     h = h.concat(`
+		     <div class="col-sm" id="${id}">
+		     <button type="button" class="btn btn-secondary btn-sm add-code" ${hide}>Add</button>
+		     <pre><code>${c}</code></pre>
+		     <textarea>${c}</textarea>
+		     <button type="button" class="btn btn-secondary btn-sm submit-code">Submit</button>
+		     </div>
+		     `)
+		 }
+		 h = h.concat('</div>')
+		 $('#words').append(h)
+	     }
+	     
+	     $('.add-code').click(function() {
+		 console.log($(this).closest('div').attr('id'))
+		 $(this).toggle()
+		 $(this).closest('div').find('textarea').toggle()
+		 $(this).closest('div').find('.submit-code').toggle()
+
+	     })
+
+	     $('.submit-code').click(function() {
+		 let id = $(this).closest('div').attr('id')
+		 let snippet = $(this).closest('div').find('textarea').val()
+
+		 if (snippet != '') {
+		     $(this).closest('div').append(`<pre><code>${snippet}</code></pre>`)
+		     code[id] = snippet
+		     console.log(code)
+		 }
+		 
+	     	 $(this).toggle()
+		 $(this).closest('div').find('textarea').toggle()
+
+		 if (snippet == '') {
+		     $(this).closest('div').find('.add-code').toggle()
+		 }
+	     })
+	     
+	 })
+	</script>
+    </body>
+</html>
