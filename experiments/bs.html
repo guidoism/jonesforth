@@ -16,7 +16,7 @@
 	<title>Jones Forth Creator</title>
     </head>
     <body>
-	<h1>Jones Forth Creator</h1>
+	<h1>Jones Forth Creator <button type="button" class="btn btn-primary btn-sm export-json">Export</button></h1>
 	
 	<div class="container" id="words">
  	    <div class="row">
@@ -46,7 +46,8 @@
 
 	<script>
 	 $(document).ready(function() {
-	     var words = ['NEXT', 'DROP', 'SWAP', 'DUP']
+	     var words = ['NEXT', 'DROP', 'SWAP', 'DUP', "OVER", "ROT", "NROT", "TWODROP", "TWODUP", "TWOSWAP",
+			  "QDUP", "INCR", "DECR", "INCR4", "DECR4", "ADD", "SUB", "MUL", "DIVMOD"]
 	     var syntaxes = ['att', 'intel', 'arm', 'riscv32']
 	     var code = {
 		 "next-att": "lodsl\njmp *(%eax)",
@@ -59,6 +60,21 @@
 		 "swap-intel64": "pop rax\npop rbx\npush rax\npush rbx",
 		 "dup-att": "mov (%esp),%eax\npush %eax",
 		 "dup-intel": "mov eax, esp\npush eax",
+		 "over-att": "mov 4(%esp),%eax\npush %eax",
+		 "rot-att": "pop %eax\npop %ebx\npop %ecx\npush %ebx\npush %eax\npush %ecx",
+		 "nrot-att": "pop %eax\npop %ebx\npop %ecx\npush %eax\npush %ecx\npush %ebx",
+		 "twodrop-att": "pop %eax\npop %eax",
+		 "twodup-att": "mov (%esp),%eax\nmov 4(%esp),%ebx\npush %ebx\npush %eax",
+		 "twoswap-att": "pop %eax\npop %ebx\npop %ecx\npop %edx\npush %ebx\npush %eax\npush %edx\npush %ecx",
+		 "qdup-att": "movl (%esp),%eax\ntest %eax,%eax\njz 1f\npush %eax",
+		 "incr-att": "incl (%esp)",
+		 "decr-att": "decl (%esp)",
+		 "incr4-att": "addl $4,(%esp)",
+		 "decr4-att": "subl $4,(%esp)",
+		 "add-att": "pop %eax\naddl %eax,(%esp)",
+		 "sub-att": "pop %eax\nsubl %eax,(%esp)",
+		 "mul-att": "pop %eax\npop %ebx\nimull %ebx,%eax\npush %eax",
+		 "divmod-att": "xor %edx,%edx\npop %ebx\npop %eax\nidivl %ebx\npush %edx\npush %eax",
 	     }
 	     var hex = {
 		 "dup-x86": "89E050",
@@ -114,7 +130,13 @@
 		     $(this).closest('div').find('.add-code').toggle()
 		 }
 	     })
-	     
+
+	     $('.export-json').click(function() {
+		 var x = window.open();
+		 x.document.open();
+		 x.document.write(JSON.stringify(code));
+		 x.document.close();
+	     })
 	 })
 	</script>
     </body>
