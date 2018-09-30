@@ -9,6 +9,9 @@ multiple online assemblers I decided to write a quick-and-dirty tool to fill in
 the rest of the assembly for each word and each architecture and to automatically
 run them against an assembler.
 
+With this, we should be able to programmatically assemble the pieces of assembly,
+commentary, and binary opcodes into various visualizations.
+
 ## Ideas
 
 - Show hex for opcodes, ascii for text, numbers for numbers -- And color code them while displaying the memory layout.
