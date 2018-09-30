@@ -128,25 +128,27 @@
 	     }
 
 	     $('.compile').click(function() {
-		 let a = new ks.Keystone(ks.ARCH_X86, ks.MODE_32)
-		 a.option(ks.OPT_SYNTAX, ks.OPT_SYNTAX_INTEL)
+		 let i32 = new ks.Keystone(ks.ARCH_X86, ks.MODE_32)
+		 let a32 = new ks.Keystone(ks.ARCH_ARM, ks.MODE_ARM)
 		 for (id of all_ids) {
 		     let [word, syntax] = id.split('-')
 		     let assembly = code[id] || ''
 		     if (syntax == 'intel' && assembly != '') {
-			 console.log(`Compiling ${id}`)
-			 console.log(assembly)
-			 let result = a.asm(assembly)
-			 /* result.failed = false; */
-			 /* result.count = 5; */
-			 /* result.mc = new Uint8Array([0x48, 0xFF, 0xC0, 0xE8, ...]); */
-			 console.log(tohex(result))
+			 i32.option(ks.OPT_SYNTAX, ks.OPT_SYNTAX_INTEL)
+			 let result = i32.asm(assembly)
+			 compiled = $('#'+id).find('.alert')
+			 compiled.html(tohex(result))
+			 compiled.show()
+		     }
+		     if (syntax == 'att' && assembly != '') {
+			 i32.option(ks.OPT_SYNTAX, ks.OPT_SYNTAX_ATT)
+			 let result = i32.asm(assembly)
 			 compiled = $('#'+id).find('.alert')
 			 compiled.html(tohex(result))
 			 compiled.show()
 		     }
 		 }
-		 a.close();
+		 i32.close();
 	     })
 	 })
 	</script>
