@@ -54,35 +54,9 @@
 	     var words = ['NEXT', 'DROP', 'SWAP', 'DUP', "OVER", "ROT", "NROT", "TWODROP", "TWODUP", "TWOSWAP",
 			  "QDUP", "INCR", "DECR", "INCR4", "DECR4", "ADD", "SUB", "MUL", "DIVMOD"]
 	     var syntaxes = ['att', 'intel', 'arm', 'riscv32']
-	     var code = {
-		 "next-att": "lodsl\njmp *(%eax)",
-		 "next-intel": "lodsd\njmp eax",
-		 "next-arm": "ldr r0, [r10], #4\nldr r1, [r0]\nbx r1",
-		 "drop-att": "pop %eax",
-		 "drop-intel": "pop eax",
-		 "swap-att": "pop %eax\npop %ebx\npush %eax\npush %ebx",
-		 "swap-intel": "pop eax\npop ebx\npush eax\npush ebx",
-		 "swap-intel64": "pop rax\npop rbx\npush rax\npush rbx",
-		 "dup-att": "mov (%esp),%eax\npush %eax",
-		 "dup-intel": "mov eax, esp\npush eax",
-		 "over-att": "mov 4(%esp),%eax\npush %eax",
-		 "rot-att": "pop %eax\npop %ebx\npop %ecx\npush %ebx\npush %eax\npush %ecx",
-		 "nrot-att": "pop %eax\npop %ebx\npop %ecx\npush %eax\npush %ecx\npush %ebx",
-		 "twodrop-att": "pop %eax\npop %eax",
-		 "twodup-att": "mov (%esp),%eax\nmov 4(%esp),%ebx\npush %ebx\npush %eax",
-		 "twoswap-att": "pop %eax\npop %ebx\npop %ecx\npop %edx\npush %ebx\npush %eax\npush %edx\npush %ecx",
-		 "qdup-att": "movl (%esp),%eax\ntest %eax,%eax\njz 1f\npush %eax",
-		 "incr-att": "incl (%esp)",
-		 "decr-att": "decl (%esp)",
-		 "incr4-att": "addl $4,(%esp)",
-		 "decr4-att": "subl $4,(%esp)",
-		 "add-att": "pop %eax\naddl %eax,(%esp)",
-		 "sub-att": "pop %eax\nsubl %eax,(%esp)",
-		 "mul-att": "pop %eax\npop %ebx\nimull %ebx,%eax\npush %eax",
-		 "divmod-att": "xor %edx,%edx\npop %ebx\npop %eax\nidivl %ebx\npush %edx\npush %eax",
-	     }
-
-	     code = {"next-att":"lodsl\njmp *(%eax)","next-intel":"lodsd\njmp eax","next-arm":"ldr r0, [r10], #4\nldr r1, [r0]\nbx r1","drop-att":"pop %eax","drop-intel":"pop eax","swap-att":"pop %eax\npop %ebx\npush %eax\npush %ebx","swap-intel":"pop eax\npop ebx\npush eax\npush ebx","swap-intel64":"pop rax\npop rbx\npush rax\npush rbx","dup-att":"mov (%esp),%eax\npush %eax","dup-intel":"mov eax, esp\npush eax","over-att":"mov 4(%esp),%eax\npush %eax","rot-att":"pop %eax\npop %ebx\npop %ecx\npush %ebx\npush %eax\npush %ecx","nrot-att":"pop %eax\npop %ebx\npop %ecx\npush %eax\npush %ecx\npush %ebx","twodrop-att":"pop %eax\npop %eax","twodup-att":"mov (%esp),%eax\nmov 4(%esp),%ebx\npush %ebx\npush %eax","twoswap-att":"pop %eax\npop %ebx\npop %ecx\npop %edx\npush %ebx\npush %eax\npush %edx\npush %ecx","qdup-att":"movl (%esp),%eax\ntest %eax,%eax\njz 1f\npush %eax","incr-att":"incl (%esp)","decr-att":"decl (%esp)","incr4-att":"addl $4,(%esp)","decr4-att":"subl $4,(%esp)","add-att":"pop %eax\naddl %eax,(%esp)","sub-att":"pop %eax\nsubl %eax,(%esp)","mul-att":"pop %eax\npop %ebx\nimull %ebx,%eax\npush %eax","divmod-att":"xor %edx,%edx\npop %ebx\npop %eax\nidivl %ebx\npush %edx\npush %eax","over-intel":"mov eax, [esp+4]\npush eax","rot-intel":"pop eax\npop ebx\npop ecx\npush ebx\npush eax\npush ecx"}
+	     var all_ids = words.map((e, i) => { return syntaxes.map((ee, ii) => `${e}-${ee}`.toLowerCase()) }).flat(1)
+	     
+	     var code = {"next-att":"lodsl\njmp *(%eax)","next-intel":"lodsd\njmp eax","next-arm":"ldr r0, [r10], #4\nldr r1, [r0]\nbx r1","drop-att":"pop %eax","drop-intel":"pop eax","swap-att":"pop %eax\npop %ebx\npush %eax\npush %ebx","swap-intel":"pop eax\npop ebx\npush eax\npush ebx","swap-intel64":"pop rax\npop rbx\npush rax\npush rbx","dup-att":"mov (%esp),%eax\npush %eax","dup-intel":"mov eax, esp\npush eax","over-att":"mov 4(%esp),%eax\npush %eax","rot-att":"pop %eax\npop %ebx\npop %ecx\npush %ebx\npush %eax\npush %ecx","nrot-att":"pop %eax\npop %ebx\npop %ecx\npush %eax\npush %ecx\npush %ebx","twodrop-att":"pop %eax\npop %eax","twodup-att":"mov (%esp),%eax\nmov 4(%esp),%ebx\npush %ebx\npush %eax","twoswap-att":"pop %eax\npop %ebx\npop %ecx\npop %edx\npush %ebx\npush %eax\npush %edx\npush %ecx","qdup-att":"movl (%esp),%eax\ntest %eax,%eax\njz 1f\npush %eax","incr-att":"incl (%esp)","decr-att":"decl (%esp)","incr4-att":"addl $4,(%esp)","decr4-att":"subl $4,(%esp)","add-att":"pop %eax\naddl %eax,(%esp)","sub-att":"pop %eax\nsubl %eax,(%esp)","mul-att":"pop %eax\npop %ebx\nimull %ebx,%eax\npush %eax","divmod-att":"xor %edx,%edx\npop %ebx\npop %eax\nidivl %ebx\npush %edx\npush %eax","over-intel":"mov eax, [esp+4]\npush eax","rot-intel":"pop eax\npop ebx\npop ecx\npush ebx\npush eax\npush ecx"}
 	     
 	     var hex = {
 		 "dup-x86": "89E050",
@@ -156,18 +130,21 @@
 	     $('.compile').click(function() {
 		 let a = new ks.Keystone(ks.ARCH_X86, ks.MODE_32)
 		 a.option(ks.OPT_SYNTAX, ks.OPT_SYNTAX_INTEL)
-		 for (id of ['next-intel', 'drop-intel']) {
-		     let [word, syntax] = id
-		     let assembly = code[id]
-		     console.log(assembly)
-		     let result = a.asm(assembly)
-		     /* result.failed = false; */
-		     /* result.count = 5; */
-		     /* result.mc = new Uint8Array([0x48, 0xFF, 0xC0, 0xE8, ...]); */
-		     console.log(tohex(result))
-		     compiled = $('#'+id).find('.alert')
-		     compiled.html(tohex(result))
-		     compiled.show()
+		 for (id of all_ids) {
+		     let [word, syntax] = id.split('-')
+		     let assembly = code[id] || ''
+		     if (syntax == 'intel' && assembly != '') {
+			 console.log(`Compiling ${id}`)
+			 console.log(assembly)
+			 let result = a.asm(assembly)
+			 /* result.failed = false; */
+			 /* result.count = 5; */
+			 /* result.mc = new Uint8Array([0x48, 0xFF, 0xC0, 0xE8, ...]); */
+			 console.log(tohex(result))
+			 compiled = $('#'+id).find('.alert')
+			 compiled.html(tohex(result))
+			 compiled.show()
+		     }
 		 }
 		 a.close();
 	     })
