@@ -12,6 +12,8 @@
 	 textarea {display: none}
 	 .submit-code {display: none}
 	 .alert {display: none}
+	 .row { border: 1px solid }
+	 .row + .row { border-top:0 }
 	</style>
 	
 	<title>Jones Forth Creator</title>
@@ -79,6 +81,9 @@
 		 "mul-att": "pop %eax\npop %ebx\nimull %ebx,%eax\npush %eax",
 		 "divmod-att": "xor %edx,%edx\npop %ebx\npop %eax\nidivl %ebx\npush %edx\npush %eax",
 	     }
+
+	     code = {"next-att":"lodsl\njmp *(%eax)","next-intel":"lodsd\njmp eax","next-arm":"ldr r0, [r10], #4\nldr r1, [r0]\nbx r1","drop-att":"pop %eax","drop-intel":"pop eax","swap-att":"pop %eax\npop %ebx\npush %eax\npush %ebx","swap-intel":"pop eax\npop ebx\npush eax\npush ebx","swap-intel64":"pop rax\npop rbx\npush rax\npush rbx","dup-att":"mov (%esp),%eax\npush %eax","dup-intel":"mov eax, esp\npush eax","over-att":"mov 4(%esp),%eax\npush %eax","rot-att":"pop %eax\npop %ebx\npop %ecx\npush %ebx\npush %eax\npush %ecx","nrot-att":"pop %eax\npop %ebx\npop %ecx\npush %eax\npush %ecx\npush %ebx","twodrop-att":"pop %eax\npop %eax","twodup-att":"mov (%esp),%eax\nmov 4(%esp),%ebx\npush %ebx\npush %eax","twoswap-att":"pop %eax\npop %ebx\npop %ecx\npop %edx\npush %ebx\npush %eax\npush %edx\npush %ecx","qdup-att":"movl (%esp),%eax\ntest %eax,%eax\njz 1f\npush %eax","incr-att":"incl (%esp)","decr-att":"decl (%esp)","incr4-att":"addl $4,(%esp)","decr4-att":"subl $4,(%esp)","add-att":"pop %eax\naddl %eax,(%esp)","sub-att":"pop %eax\nsubl %eax,(%esp)","mul-att":"pop %eax\npop %ebx\nimull %ebx,%eax\npush %eax","divmod-att":"xor %edx,%edx\npop %ebx\npop %eax\nidivl %ebx\npush %edx\npush %eax","over-intel":"mov eax, [esp+4]\npush eax","rot-intel":"pop eax\npop ebx\npop ecx\npush ebx\npush eax\npush ecx"}
+	     
 	     var hex = {
 		 "dup-x86": "89E050",
 		 "drop-x86": "58",
@@ -108,12 +113,11 @@
 		 h = h.concat('</div>')
 		 $('#words').append(h)
 	     }
-	     
-	     $('.add-code').click(function() {
+
+	     $('.add-code, pre').click(function() {
 		 $(this).toggle()
 		 $(this).closest('div').find('textarea').toggle()
 		 $(this).closest('div').find('.submit-code').toggle()
-
 	     })
 
 	     $('.submit-code').click(function() {
@@ -121,7 +125,8 @@
 		 let snippet = $(this).closest('div').find('textarea').val()
 
 		 if (snippet != '') {
-		     $(this).closest('div').find('pre').replaceWith(`<pre><code>${snippet}</code></pre>`)
+		     $(this).closest('div').find('pre').html(`<code>${snippet}</code>`)
+		     $(this).closest('div').find('pre').show()
 		     code[id] = snippet
 		 }
 		 
