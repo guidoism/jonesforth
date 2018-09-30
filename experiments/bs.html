@@ -133,22 +133,30 @@
 		 for (id of all_ids) {
 		     let [word, syntax] = id.split('-')
 		     let assembly = code[id] || ''
-		     if (syntax == 'intel' && assembly != '') {
+		     if (assembly == '') continue
+		     if (syntax == 'intel') {
 			 i32.option(ks.OPT_SYNTAX, ks.OPT_SYNTAX_INTEL)
 			 let result = i32.asm(assembly)
 			 compiled = $('#'+id).find('.alert')
 			 compiled.html(tohex(result))
 			 compiled.show()
 		     }
-		     if (syntax == 'att' && assembly != '') {
+		     if (syntax == 'att') {
 			 i32.option(ks.OPT_SYNTAX, ks.OPT_SYNTAX_ATT)
 			 let result = i32.asm(assembly)
+			 compiled = $('#'+id).find('.alert')
+			 compiled.html(tohex(result))
+			 compiled.show()
+		     }	
+		     if (syntax == 'arm') {
+			 let result = a32.asm(assembly)
 			 compiled = $('#'+id).find('.alert')
 			 compiled.html(tohex(result))
 			 compiled.show()
 		     }
 		 }
 		 i32.close();
+		 a32.close();
 	     })
 	 })
 	</script>
