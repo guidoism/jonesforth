@@ -181,38 +181,30 @@
 	     
 	     function compile(program) {
 		 if (program == '') return []
-		 console.log(program)
 		 let [piece, rest] = popcommand(program)
 		 
 		 let [_, f, s] = piece.match(/(\S+)\((\S+)\)/)
 		 if (f == 'ptr') {
 		     let bu = bytes(4, dv => dv.setUint32(0, state[s], true))
-		     console.log(tohex(bu))
-		     console.log
 		     state['address'] += bu.byteLength
 		     return [new Uint8Array(bu)].concat(compile(rest))
 		 }
 		 else if (f == 'len') {
 		     let bu = bytes(1, dv => dv.setUint8(0, state[s].length, true))
-		     console.log(tohex(bu))
 		     state['address'] += bu.byteLength
 		     return [new Uint8Array(bu)].concat(compile(rest))
 		 }
 		 else if (f == 'str') {
 		     let bu = Uint8Array.from(toascii(state[s]))
-		     console.log(tohex(bu))
 		     state['address'] += bu.byteLength
 		     return [bu].concat(compile(rest))
 		 }
 		 else if (f == 'addressof') {
-		     console.log(state)
 		     let bu = bytes(4, dv => dv.setUint32(0, state['address']+4, true))
-		     console.log(tohex(bu))
 		     state['address'] += bu.byteLength
 		     return [new Uint8Array(bu)].concat(compile(rest))
 		 }
 		 else if (f == 'bytes') {
-		     console.log(state)
 		     k = (s == 'next') ? 'NEXT' : state['name']
 		     let bu = Uint8Array.from(compiled_words[word_id(k, 'att')])
 		     state['address'] += bu.byteLength
@@ -221,10 +213,7 @@
 	     }
 	     
 	     $('.visualize').click(function() {
-		 let name = "OVER"
-		 let opcodes = "8B44240450"
 		 let word = compile("ptr(previous_word)|len(name)|str(name)|addressof(code)|bytes(code)|bytes(next)")
-		 console.log(word)
 		 for (w of word) {
 		     $('#visualization').append(tohex(w))
 		 }
