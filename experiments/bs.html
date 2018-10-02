@@ -22,7 +22,11 @@
 	<h1>Jones Forth Creator
 	    <button type="button" class="btn btn-primary btn-sm compile">Compile</button>
 	    <button type="button" class="btn btn-primary btn-sm export-json">Export</button>
+	    <button type="button" class="btn btn-primary btn-sm visualize">Visualize</button>
 	</h1>
+
+	<div class="container" id="visualization">
+	</div>
 	
 	<div class="container" id="words">
  	    <div class="row">
@@ -51,21 +55,16 @@
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 	<script>
 	 $(document).ready(function() {
+	     // Note: These names are ascii-friendly for now, not official forth words, maybe should url-encode names instead
 	     var words = ['NEXT', 'DROP', 'SWAP', 'DUP', "OVER", "ROT", "NROT", "TWODROP", "TWODUP", "TWOSWAP",
 			  "QDUP", "INCR", "DECR", "INCR4", "DECR4", "ADD", "SUB", "MUL", "DIVMOD"]
 	     var syntaxes = ['att', 'intel', 'arm', 'riscv32']
-	     var all_ids = words.map((e, i) => { return syntaxes.map((ee, ii) => `${e}-${ee}`.toLowerCase()) }).flat(1)
+	     var word_id = (w, s) => `${w}-${s}`.toLowerCase()
+	     var all_ids = words.map((e, i) => { return syntaxes.map((ee, ii) => word_id(e, ee)) }).flat(1)
 	     
 	     var code = {"next-att":"lodsl\njmp *(%eax)","next-intel":"lodsd\njmp eax","next-arm":"ldr r0, [r10], #4\nldr r1, [r0]\nbx r1","drop-att":"pop %eax","drop-intel":"pop eax","swap-att":"pop %eax\npop %ebx\npush %eax\npush %ebx","swap-intel":"pop eax\npop ebx\npush eax\npush ebx","swap-intel64":"pop rax\npop rbx\npush rax\npush rbx","dup-att":"mov (%esp),%eax\npush %eax","dup-intel":"mov eax, esp\npush eax","over-att":"mov 4(%esp),%eax\npush %eax","rot-att":"pop %eax\npop %ebx\npop %ecx\npush %ebx\npush %eax\npush %ecx","nrot-att":"pop %eax\npop %ebx\npop %ecx\npush %eax\npush %ecx\npush %ebx","twodrop-att":"pop %eax\npop %eax","twodup-att":"mov (%esp),%eax\nmov 4(%esp),%ebx\npush %ebx\npush %eax","twoswap-att":"pop %eax\npop %ebx\npop %ecx\npop %edx\npush %ebx\npush %eax\npush %edx\npush %ecx","qdup-att":"movl (%esp),%eax\ntest %eax,%eax\nje 0x00\npush %eax","incr-att":"incl (%esp)","decr-att":"decl (%esp)","incr4-att":"addl $4,(%esp)","decr4-att":"subl $4,(%esp)","add-att":"pop %eax\naddl %eax,(%esp)","sub-att":"pop %eax\nsubl %eax,(%esp)","mul-att":"pop %eax\npop %ebx\nimull %ebx,%eax\npush %eax","divmod-att":"xor %edx,%edx\npop %ebx\npop %eax\nidivl %ebx\npush %edx\npush %eax","over-intel":"mov eax, [esp+4]\npush eax","rot-intel":"pop eax\npop ebx\npop ecx\npush ebx\npush eax\npush ecx","qdup-intel":"mov eax, [esp]\ntest eax, eax\nje 0x00\npush eax"}
-	     
-	     var hex = {
-		 "dup-x86": "89E050",
-		 "drop-x86": "58",
-		 "next-x86": "ADFFE0",
-		 "next-thumb": "5AF8040B01680847",
-		 "swap-x86": "585B5053",
-		 "swap-x64": "585B5053",
-	     }
+
+	     var compiled_words = {"next-att":[173,255,32],"next-intel":[173,255,224],"next-arm":[4,0,154,228,0,16,144,229,17,255,47,225],"drop-att":[88],"drop-intel":[88],"swap-att":[88,91,80,83],"swap-intel":[88,91,80,83],"dup-att":[139,4,36,80],"dup-intel":[137,224,80],"over-att":[139,68,36,4,80],"over-intel":[139,68,36,4,80],"rot-att":[88,91,89,83,80,81],"rot-intel":[88,91,89,83,80,81],"nrot-att":[88,91,89,80,81,83],"twodrop-att":[88,88],"twodup-att":[139,4,36,139,92,36,4,83,80],"twoswap-att":[88,91,89,90,83,80,82,81],"qdup-att":[139,4,36,133,192,116,249,80],"qdup-intel":[139,4,36,133,192,116,249,80],"incr-att":[255,4,36],"decr-att":[255,12,36],"incr4-att":[131,4,36,4],"decr4-att":[131,44,36,4],"add-att":[88,1,4,36],"sub-att":[88,41,4,36],"mul-att":[88,91,15,175,195,80],"divmod-att":[49,210,91,88,247,251,82,80]}
 	     
 	     for (let w of words) {
 		 let h = `<div class="row"><div class="col-sm">${w}</div>`
@@ -73,10 +72,9 @@
 		     let id = `${w}-${s}`.toLowerCase()
 		     let c = code[id] || ''
 		     let hide = c != '' ? 'style="display:none"' : ''
-		     let cc = hex[id] || ''
 		     h = h.concat(`
 		     <div class="col-sm" id="${id}">
-                     <div class="alert alert-secondary" role="alert">${cc}</div>
+                     <div class="alert alert-secondary" role="alert"></div>
 		     <button type="button" class="btn btn-secondary btn-sm add-code" ${hide}>Add</button>
 		     <pre><code>${c}</code></pre>
 		     <textarea>${c}</textarea>
@@ -113,10 +111,12 @@
 	     })
 
 	     $('.export-json').click(function() {
-		 var x = window.open();
-		 x.document.open();
-		 x.document.write(JSON.stringify(code));
-		 x.document.close();
+		 var x = window.open()
+		 x.document.open()
+		 x.document.write(`var code = ${JSON.stringify(code)}\n\n`)
+		 let n = Object.assign({}, ...Object.keys(compiled_words).map(k => ({[k]: Array.from(compiled_words[k])})));
+		 x.document.write(`var compiled_words = ${JSON.stringify(n)}\n\n`)
+		 x.document.close()
 	     })
 
 	     function tohex(buffer) {
@@ -137,6 +137,7 @@
 		     if (syntax == 'intel') {
 			 i32.option(ks.OPT_SYNTAX, ks.OPT_SYNTAX_INTEL)
 			 let result = i32.asm(assembly)
+			 compiled_words[id] = result
 			 compiled = $('#'+id).find('.alert')
 			 compiled.html(tohex(result))
 			 compiled.show()
@@ -144,12 +145,14 @@
 		     if (syntax == 'att') {
 			 i32.option(ks.OPT_SYNTAX, ks.OPT_SYNTAX_ATT)
 			 let result = i32.asm(assembly)
+			 compiled_words[id] = result
 			 compiled = $('#'+id).find('.alert')
 			 compiled.html(tohex(result))
 			 compiled.show()
 		     }	
 		     if (syntax == 'arm') {
 			 let result = a32.asm(assembly)
+			 compiled_words[id] = result
 			 compiled = $('#'+id).find('.alert')
 			 compiled.html(tohex(result))
 			 compiled.show()
@@ -158,8 +161,77 @@
 		 i32.close();
 		 a32.close();
 	     })
+
+	     //////////////////////////////////////////////////////////////////
+	     let state = {
+		 'previous_word': 0,
+		 'name': 'OVER',
+		 'address': 1,
+	     }
+
+	     let toascii = s => s.split('').map(c => c.charCodeAt(0))
+	     let popcommand = s => { let a = s.split('|', 1)[0]; return [a, s.substr(a.length + 1)] }
+	     
+	     function bytes(size, f) {
+		 let bu = new ArrayBuffer(size)
+		 var dv = new DataView(bu)
+		 f(dv)
+		 return bu
+	     }
+	     
+	     function compile(program) {
+		 if (program == '') return []
+		 console.log(program)
+		 let [piece, rest] = popcommand(program)
+		 
+		 let [_, f, s] = piece.match(/(\S+)\((\S+)\)/)
+		 if (f == 'ptr') {
+		     let bu = bytes(4, dv => dv.setUint32(0, state[s], true))
+		     console.log(tohex(bu))
+		     console.log
+		     state['address'] += bu.byteLength
+		     return [new Uint8Array(bu)].concat(compile(rest))
+		 }
+		 else if (f == 'len') {
+		     let bu = bytes(1, dv => dv.setUint8(0, state[s].length, true))
+		     console.log(tohex(bu))
+		     state['address'] += bu.byteLength
+		     return [new Uint8Array(bu)].concat(compile(rest))
+		 }
+		 else if (f == 'str') {
+		     let bu = Uint8Array.from(toascii(state[s]))
+		     console.log(tohex(bu))
+		     state['address'] += bu.byteLength
+		     return [bu].concat(compile(rest))
+		 }
+		 else if (f == 'addressof') {
+		     console.log(state)
+		     let bu = bytes(4, dv => dv.setUint32(0, state['address']+4, true))
+		     console.log(tohex(bu))
+		     state['address'] += bu.byteLength
+		     return [new Uint8Array(bu)].concat(compile(rest))
+		 }
+		 else if (f == 'bytes') {
+		     console.log(state)
+		     k = (s == 'next') ? 'NEXT' : state['name']
+		     let bu = Uint8Array.from(compiled_words[word_id(k, 'att')])
+		     state['address'] += bu.byteLength
+		     return [bu].concat(compile(rest))
+		 }
+	     }
+	     
+	     $('.visualize').click(function() {
+		 let name = "OVER"
+		 let opcodes = "8B44240450"
+		 let word = compile("ptr(previous_word)|len(name)|str(name)|addressof(code)|bytes(code)|bytes(next)")
+		 console.log(word)
+		 for (w of word) {
+		     $('#visualization').append(tohex(w))
+		 }
+	     })
+	     
 	 })
 	</script>
-	<script src="keystone.min.js"></script>
+	<!-- <script src="keystone.min.js"></script> -->
     </body>
 </html>
