@@ -165,7 +165,6 @@
 	     //////////////////////////////////////////////////////////////////
 	     let state = {
 		 'previous_word': 0,
-		 'name': 'OVER',
 		 'address': 1,
 	     }
 
@@ -213,9 +212,15 @@
 	     }
 	     
 	     $('.visualize').click(function() {
-		 let word = compile("ptr(previous_word)|len(name)|str(name)|addressof(code)|bytes(code)|bytes(next)")
-		 for (w of word) {
-		     $('#visualization').append(tohex(w))
+		 let program = "ptr(previous_word)|len(name)|str(name)|addressof(code)|bytes(code)|bytes(next)"
+		 for (word of words) {
+		     if (word == 'NEXT') continue
+		     state['name'] = word
+		     for (w of compile(program, word)) {
+			 $('#visualization').append(tohex(w) + ' ')
+		     }
+		     $('#visualization').append('<br>')
+		     state['previous_word'] = state['address']
 		 }
 	     })
 	     
