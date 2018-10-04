@@ -163,6 +163,33 @@
 	     })
 
 	     //////////////////////////////////////////////////////////////////
+	     function better_vis() {
+		 let v = $('#visualization')
+		 let toascii = s => s.split('').map(c => c.charCodeAt(0))
+		 let compiled = s => compiled_words[word_id(s, 'att')]
+		 //let 32addr = s => 
+
+		 let prev = 0
+		 let curr = 1
+		 
+		 let entries = words.filter(name => name != 'NEXT').map(name => {
+		     let m = compiled(name)
+		     let n = compiled('next')
+		     let preamble = 4 + 1 + name.length + 4
+		     let ml_addr = curr + preamble
+		     console.log(curr, prev, name.length, name, ml_addr, m, n)
+		     //let bu = new ArrayBuffer(preable + m.length + n.length)
+		     //let vi = lay(bu, [32addr(prev), name.length, toascii(name), 32addr(ml_addr), m, n])
+		     
+		     prev = curr
+		     curr = ml_addr + m.length + n.length
+		 })
+		 v.show()
+	     }
+	     better_vis()
+	     
+	     //////////////////////////////////////////////////////////////////
+	     // TODO: After better_vis is done remove everything below here
 	     let state = {
 		 'previous_word': 0,
 		 'address': 1,
