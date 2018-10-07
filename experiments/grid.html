@@ -61,12 +61,6 @@
      keys = ['> ']
      update_terminal()
 
-     function update_row(id, data) {
-	 var t = d3.select(id).selectAll("td").data(data).text(d => d)
-	 t.enter().append("td").text(d => d)
-	 t.exit().remove()
-     }
-
      let rows = [
 	 ["#row-1", ['Membership', 'Price', '', '', '', '']],
 	 ["#row-2", ['Kentucky Science Center - Family Plus', '$121.90', '', '', '', '']],
@@ -75,8 +69,10 @@
 
      function update() {
 	 for (let row of rows) {
-	     let [id, d] = row
-	     update_row(id, d)
+	     let [id, data] = row
+	     var t = d3.select(id).selectAll("td").data(data).text(d => d)
+	     t.enter().append("td").text(d => d)
+	     t.exit().remove()
 	 }
 
          $("tr td").click(function(e) {
