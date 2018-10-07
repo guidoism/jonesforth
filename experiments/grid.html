@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://www.bartolucci.org/equity-a.css">
+	<link rel="stylesheet" href="https://www.bartolucci.org/concourse.css">
+	<style>
+	 body {font-family: equity-text; margin: 0px auto; max-width: 750px; line-height: 1.4; font-size: 18px; color: #444; padding: 0 10px;}
+	 img {max-width: 750px; margin: 0 -10px;}
+	 p {-webkit-hyphens: auto; -moz-hyphens: auto; -ms-hyphens: auto; hyphens: auto;}
+	 h1 {font-family: concourse-c4,sans-serif; padding-left: 0; margin-top: 0; margin-bottom: 5px;}
+	 h2,h3,h4,h5 {font-family: concourse-c4,sans-serif; font-weight: normal; margin-bottom: 5px;}
+	 h1 + p, h2 + p, h3 + p, h4 + p, h5 + p { margin-top: 5px; }
+	 a { color: #265C83; }
+	 a:link { text-decoration: none; }
+	 ul { list-style-type: circle; }
+	 sup, sub { vertical-align: baseline; position: relative; top: -0.4em; }
+	 sub { top: 0.4em; }
+	 
+	 table { empty-cells: show; border-collapse: collapse; vertical-align: top; }
+	 table thead th { border-left: 1px solid; padding-left: 5px; }
+	 table thead th:first-child { border: none; }
+	 table tbody td { border-left: 1px solid; padding-left: 5px; }
+	 table tbody td:first-child { border-left: none; font-family: concourse-c4,sans-serif; font-weight: normal; }
+	 table tbody tr:first-child { font-family: concourse-c4,sans-serif; font-weight: normal; }
+	 table tbody tr:last-child td { border-bottom: none; }
+	 thead { font-family: concourse-c4,sans-serif; font-weight: normal; }
+
+	 .smallcaps { font-family: equity-caps; text-transform: lowercase; font-style: normal; }
+	 .log-date { font-family: equity-caps; text-transform: lowercase;
+	     font-style: normal; color: grey; }
+	 strong { font-family: equity-caps; text-transform: lowercase; font-style: normal; font-weight: normal; }
+	 .linkback { color: lightgrey; font-family: concourse-c4,sans-serif; }
+
+	 .highlighted { background-color: lightblue; }
+	 #terminal { background-color: black; color: lightgreen; font-family: Monaco; }
+	</style>
+    </head>
+
+    <body>
+	<table id="grid">
+	    <thead id="header"></thead>
+	    <tr id="row-1"></tr>
+	    <tr id="row-2"></tr>
+	    <tr id="row-3"></tr>
+	</table>
+	<p id="terminal">
+    </body>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+
+     var keys = []
+     function update_terminal() {
+	 var t = d3.select('#terminal').selectAll("span").data(keys).text(d => d)
+	 t.enter().append("span").text(d => d)
+	 t.exit().remove()
+     }
+     keys = ['> ']
+     update_terminal()
+
+     function update_row(id, data) {
+	 var t = d3.select(id).selectAll("td").data(data).text(d => d)
+	 t.enter().append("td").text(d => d)
+	 t.exit().remove()
+     }
+
+     let rows = [
+	 ["#row-1", ['Membership', 'Price', '', '', '', '']],
+	 ["#row-2", ['Kentucky Science Center - Family Plus', '$121.90', '', '', '', '']],
+	 ["#row-3", ['Kentucky Science Center - Family', '$94.34', '', '', '', '']],
+     ]
+
+     function update() {
+	 for (let row of rows) {
+	     let [id, d] = row
+	     update_row(id, d)
+	 }
+
+         $("tr td").click(function(e) {
+	     $("tr td").removeClass("highlighted")
+	     $(this).toggleClass("highlighted")
+	 })
+     }
+
+     update()
+
+     function h() {
+	 return $('.highlighted').index()
+     }
+
+     function u(s) {
+	 let i = $('.highlighted').index()
+	 rows[1][1][i] = s
+	 update()
+     }
+
+     $("body").keypress(function(event) {
+	 let c = String.fromCharCode(event.which)
+	 if (event.which == 8) keys.pop()
+	 else keys.push(c)
+	 update_terminal()
+	 if (c == 'f') {
+	     for (let row of rows) {
+		 let [id, d] = row
+		 d.push('')
+	     }
+	     update()
+	 } else if (c == 'g') {
+	     let s = $('.highlighted').text().split('').concat(['', 'money', '=', '$', 'digit+', '.', 'digit', 'digit'])
+	     console.log(s)
+	     rows[0][1] = []
+	     rows[1][1] = s
+	     rows[2][1] = []
+	     update()
+	 }
+     })
+    </script>
+</html>
