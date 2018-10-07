@@ -87,16 +87,6 @@
 
      update()
 
-     function h() {
-	 return $('.highlighted').index()
-     }
-
-     function u(s) {
-	 let i = $('.highlighted').index()
-	 rows[1][1][i] = s
-	 update()
-     }
-
      $("body").keypress(function(event) {
 	 let c = String.fromCharCode(event.which)
 	 if (event.which == 8) keys.pop()
