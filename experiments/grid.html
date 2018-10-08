@@ -6,7 +6,7 @@
 	<link rel="stylesheet" href="https://www.bartolucci.org/equity-a.css">
 	<link rel="stylesheet" href="https://www.bartolucci.org/concourse.css">
 	<style>
-	 body {font-family: equity-text; margin: 0px auto; max-width: 750px; line-height: 1.4; font-size: 18px; color: #444; padding: 0 10px;}
+	 body {font-family: equity-text; margin: 0px auto; max-width: 950px; line-height: 1.4; font-size: 18px; color: #444; padding: 0 10px;}
 	 img {max-width: 750px; margin: 0 -10px;}
 	 p {-webkit-hyphens: auto; -moz-hyphens: auto; -ms-hyphens: auto; hyphens: auto;}
 	 h1 {font-family: concourse-c4,sans-serif; padding-left: 0; margin-top: 0; margin-bottom: 5px;}
@@ -23,6 +23,7 @@
 	 table thead th:first-child { border: none; }
 	 table tbody td { border-left: 1px solid; padding-left: 5px; }
 	 table tbody td:first-child { border-left: none; font-family: concourse-c4,sans-serif; font-weight: normal; }
+	 table tbody td:nth-child(2) { font-family: concourse-c4,sans-serif; font-weight: normal; }
 	 table tbody tr:first-child { font-family: concourse-c4,sans-serif; font-weight: normal; }
 	 table tbody tr:last-child td { border-bottom: none; }
 	 thead { font-family: concourse-c4,sans-serif; font-weight: normal; }
@@ -35,15 +36,12 @@
 
 	 .highlighted { background-color: lightblue; }
 	 #terminal { background-color: black; color: lightgreen; font-family: Monaco; }
+	 .code { font-family: Monaco; font-size: 10px }
 	</style>
     </head>
 
     <body>
 	<table id="grid">
-	    <thead id="header"></thead>
-	    <tr id="row-1"></tr>
-	    <tr id="row-2"></tr>
-	    <tr id="row-3"></tr>
 	</table>
 	<p id="terminal">
     </body>
@@ -67,14 +65,86 @@
 	 ["#row-3", ['Kentucky Science Center - Family', '$94.34', '', '', '', '']],
      ]
 
-     function update() {
-	 for (let row of rows) {
-	     let [id, data] = row
-	     var t = d3.select(id).selectAll("td").data(data).text(d => d)
-	     t.enter().append("td").text(d => d)
-	     t.exit().remove()
-	 }
+     data = [
+	 {name: 'DROP', description: 'a — '},
+	 {name: 'SWAP', description: 'a b — b a'},
+	 {name: 'DUP', description: 'a — a a'},
+	 {name: "OVER", description: 'a b — a b a'},
+	 {name: "ROT", description: 'a b c — b c a'},
+	 {name: "-ROT", description: 'a b c — c a b'},
+	 {name: "2DROP", description: 'a b —'},
+	 {name: "2DUP", description: 'a b — a b a b'},
+	 {name: "2SWAP", description: 'a b c d — c d a b'},
+	 {name: "?DUP", description: '0 — | a — a a'},
+	 {name: "INCR", description: 'n — n+1'},
+	 {name: "DECR", description: 'n — n-1'},
+	 {name: "INCR4", description: 'n — n+4'},
+	 {name: "DECR4", description: 'n — n-4'},
+	 {name: "+", description: 'n m — n+m'},
+	 {name: "-", description: 'n m — n-m'},
+	 {name: "*", description: 'n m — n×m'},
+	 {name: "/MOD", description: 'n m — n%m n÷m'},
+     ]
 
+     let stack = [5, 6, 7]
+     function compile_description(d) {
+	 //d.split(/\s*\|\s*/).map(a => {
+	 //})
+
+	 /////////////////////////////////
+	 let [before, after] = d.split(/\s*—\s*/).map(s => s ? s.split(' ') : [])
+	 before = before.reverse().map(v => `let ${v} = stack.pop()`)
+	 after = after.map(v => `stack.push(${v})`)
+	 //after = after.split(/\s*\|\s*/).map(p => p.map(v => `stack.push(${v})`))
+	 return before.concat(after).join('; ')
+     }
+
+     function tabulate(data, columns) {
+	 var table = d3.select('#grid')
+	 // TODO: Probably a much better way to do an update than this
+	 table.selectAll('thead').remove()
+	 table.selectAll('tbody').remove()
+	 var thead = table.append('thead')
+	 var tbody = table.append('tbody')
+
+	 thead.append('tr')
+			  .selectAll('th')
+			  .data(columns).enter()
+			  .append('th')
+			  .text(function (column) { return column; });
+	 
+	 var rows = tbody.selectAll('tr')
+			 .data(data)
+			 .enter()
+			 .append('tr');
+
+	 var cells = rows.selectAll('td')
+			 .data(function (row) {
+			     return columns.map(function (column) {
+				 return {column: column, value: row[column]};
+			     });
+			 })
+			 .enter()
+			 .append('td')
+	                 .classed('code', d => d.column == 'js')
+			 .text(function (d) { return d.value; });
+
+	 return table;
+     }
+     
+     function update() {
+	 tabulate(data, ['name', 'description'])
+	 /*
+	    for (let row of rows) {
+	    let [id, data] = row
+	    //var t = d3.select(id).selectAll("td").data(data).text(d => d)
+	    //t.enter().append("td").text(d => d)
+	    var t = d3.select(id).selectAll("tr").data(data).text(d => d)
+	    t.enter().append("tr").text(d => d)
+	    t.exit().remove()
+	    }
+	  */
+	 
          $("tr td").click(function(e) {
 	     $("tr td").removeClass("highlighted")
 	     $(this).toggleClass("highlighted")
@@ -95,12 +165,24 @@
 	     }
 	     update()
 	 } else if (c == 'g') {
-	     let s = $('.highlighted').text().split('').concat(['', 'money', '=', '$', 'digit+', '.', 'digit', 'digit'])
+	     let s = $('.highlighted').text().split('')
 	     console.log(s)
 	     rows[0][1] = []
 	     rows[1][1] = s
 	     rows[2][1] = []
 	     update()
+	 } else if (c == 'h') {
+	     let s = Number.parseInt($('.highlighted').text(), 10).toString(2)
+	     console.log(s)
+	     rows[0][1] = []
+	     rows[1][1] = s
+	     rows[2][1] = []
+	     update()
+	 } else if (c == 'a') {
+	     for (d of data) {
+		 d['js'] = compile_description(d['description'])
+	     }
+	     tabulate(data, ['name', 'description', 'js'])
 	 }
      })
     </script>
