@@ -84,18 +84,55 @@
 	 {name: "-", description: 'n m — n-m'},
 	 {name: "*", description: 'n m — n×m'},
 	 {name: "/MOD", description: 'n m — n%m n÷m'},
+	 {name: "=", description: 'n m — n=m'},
+	 {name: "<>", description: 'n m — n≠m'},
+	 {name: "<", description: 'n m — n<m'},
+	 {name: ">", description: 'n m — n>m'},
+	 {name: "<=", description: 'n m — n≤m'},
+	 {name: ">=", description: 'n m — n≥m'},
+	 {name: "0=", description: 'n — n=0'},
+	 {name: "0<>", description: 'n — n≠0'},
+	 {name: "0<", description: 'n — 0<n'},
+	 {name: "0>", description: 'n — 0>n'},
+	 {name: "0<=", description: 'n — 0≤n'},
+	 {name: "AND", description: 'q r — q⋀r'},
+	 {name: "OR", description: 'q r — q⋁r'},
+	 {name: "XOR", description: 'q r r'},
+	 {name: "INVERT", description: 'q — ~r'},
+	 {name: "LIT", description: '— a'},
      ]
 
-     let stack = [5, 6, 7]
-     function compile_description(d) {
-	 //d.split(/\s*\|\s*/).map(a => {
-	 //})
+     let stack = []
+     let program = [
+	 'LIT',
+	 9,
+	 'DUP',
+	 '+'
+     ]
 
-	 /////////////////////////////////
+     let lit = false
+     function run() {
+	 do {
+	     let word = program.shift()
+	     if (lit) stack.push(word)
+	     else eval(words[word])
+	 } while (program)
+     }
+     
+     function compile_description(d) {
+	 if (d[0] == '—') {
+	     return `lit = true`
+	 }
+	 
+	 let [first, second] = d.split(/\s*\|\s*/)
+	 if (second) {
+	     console.log(second)
+	     return `if(stack[-1] != '0') { ${compile_description(second)} }`
+	 }
+
 	 let [before, after] = d.split(/\s*—\s*/).map(s => s ? s.split(' ') : [])
 	 before = before.reverse().map(v => `let ${v} = stack.pop()`)
 	 after = after.map(v => `stack.push(${v})`)
-	 //after = after.split(/\s*\|\s*/).map(p => p.map(v => `stack.push(${v})`))
 	 return before.concat(after).join('; ')
      }
 
