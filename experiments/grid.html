@@ -23,8 +23,6 @@
 	 table thead th:first-child { border: none; }
 	 table tbody td { border-left: 1px solid; padding-left: 5px; }
 	 table tbody td:first-child { border-left: none; font-family: concourse-c4,sans-serif; font-weight: normal; }
-	 table tbody td:nth-child(2) { font-family: concourse-c4,sans-serif; font-weight: normal; }
-	 table tbody tr:first-child { font-family: concourse-c4,sans-serif; font-weight: normal; }
 	 table tbody tr:last-child td { border-bottom: none; }
 	 thead { font-family: concourse-c4,sans-serif; font-weight: normal; }
 
@@ -35,7 +33,7 @@
 	 .linkback { color: lightgrey; font-family: concourse-c4,sans-serif; }
 
 	 .highlighted { background-color: lightblue; }
-	 #terminal { background-color: black; color: lightgreen; font-family: Monaco; }
+	 #terminal { background-color: black; color: lightgreen; font-family: Monaco; position: fixed; bottom: 0; width: 100%; }
 	 .code { font-family: Monaco; font-size: 10px }
 	</style>
     </head>
@@ -48,6 +46,7 @@
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
     <script>
 
      var keys = []
@@ -65,7 +64,319 @@
 	 ["#row-3", ['Kentucky Science Center - Family', '$94.34', '', '', '', '']],
      ]
 
-     data = [
+     let hex = s => s.charCodeAt(0).toString(16)
+     let forth_memory = [
+	 {address: '0', char: 'D', 'hex': hex('D')},
+	 {address: '1', char: 'R', 'hex': hex('R')},
+	 {address: '2', char: 'O', 'hex': hex('O')},
+	 {address: '3', char: 'P', 'hex': hex('P')},
+	 {address: '4', char: '+', 'hex': hex('+')},
+	 {address: '5', char: '-', 'hex': hex('-')},
+     ]
+
+     let forth_memory_pretty = [
+	 {address: '0', word: 'DROP', literal: ''},
+	 {address: '4', word: '+', literal: ''},
+	 {address: '5', word: '-', literal: ''},
+     ]
+
+     let riscv_opcodes = [
+	 "beq     bimm12hi rs1 rs2 bimm12lo 14..12=0 6..2=0x18 1..0=3",
+	 "bne     bimm12hi rs1 rs2 bimm12lo 14..12=1 6..2=0x18 1..0=3",
+	 "blt     bimm12hi rs1 rs2 bimm12lo 14..12=4 6..2=0x18 1..0=3",
+	 "bge     bimm12hi rs1 rs2 bimm12lo 14..12=5 6..2=0x18 1..0=3",
+	 "bltu    bimm12hi rs1 rs2 bimm12lo 14..12=6 6..2=0x18 1..0=3",
+	 "bgeu    bimm12hi rs1 rs2 bimm12lo 14..12=7 6..2=0x18 1..0=3",
+	 "jalr    rd rs1 imm12              14..12=0 6..2=0x19 1..0=3",
+	 "jal     rd jimm20                          6..2=0x1b 1..0=3",
+	 "lui     rd imm20 6..2=0x0D 1..0=3",
+	 "auipc   rd imm20 6..2=0x05 1..0=3",
+	 "addi    rd rs1 imm12           14..12=0 6..2=0x04 1..0=3",
+	 "slli    rd rs1 31..26=0  shamt 14..12=1 6..2=0x04 1..0=3",
+	 "slti    rd rs1 imm12           14..12=2 6..2=0x04 1..0=3",
+	 "sltiu   rd rs1 imm12           14..12=3 6..2=0x04 1..0=3",
+	 "xori    rd rs1 imm12           14..12=4 6..2=0x04 1..0=3",
+	 "srli    rd rs1 31..26=0  shamt 14..12=5 6..2=0x04 1..0=3",
+	 "srai    rd rs1 31..26=16 shamt 14..12=5 6..2=0x04 1..0=3",
+	 "ori     rd rs1 imm12           14..12=6 6..2=0x04 1..0=3",
+	 "andi    rd rs1 imm12           14..12=7 6..2=0x04 1..0=3",
+	 "add     rd rs1 rs2 31..25=0  14..12=0 6..2=0x0C 1..0=3",
+	 "sub     rd rs1 rs2 31..25=32 14..12=0 6..2=0x0C 1..0=3",
+	 "sll     rd rs1 rs2 31..25=0  14..12=1 6..2=0x0C 1..0=3",
+	 "slt     rd rs1 rs2 31..25=0  14..12=2 6..2=0x0C 1..0=3",
+	 "sltu    rd rs1 rs2 31..25=0  14..12=3 6..2=0x0C 1..0=3",
+	 "xor     rd rs1 rs2 31..25=0  14..12=4 6..2=0x0C 1..0=3",
+	 "srl     rd rs1 rs2 31..25=0  14..12=5 6..2=0x0C 1..0=3",
+	 "sra     rd rs1 rs2 31..25=32 14..12=5 6..2=0x0C 1..0=3",
+	 "or      rd rs1 rs2 31..25=0  14..12=6 6..2=0x0C 1..0=3",
+	 "and     rd rs1 rs2 31..25=0  14..12=7 6..2=0x0C 1..0=3",
+	 "addiw   rd rs1 imm12            14..12=0 6..2=0x06 1..0=3",
+	 "slliw   rd rs1 31..25=0  shamtw 14..12=1 6..2=0x06 1..0=3",
+	 "srliw   rd rs1 31..25=0  shamtw 14..12=5 6..2=0x06 1..0=3",
+	 "sraiw   rd rs1 31..25=32 shamtw 14..12=5 6..2=0x06 1..0=3",
+	 "addw    rd rs1 rs2 31..25=0  14..12=0 6..2=0x0E 1..0=3",
+	 "subw    rd rs1 rs2 31..25=32 14..12=0 6..2=0x0E 1..0=3",
+	 "sllw    rd rs1 rs2 31..25=0  14..12=1 6..2=0x0E 1..0=3",
+	 "srlw    rd rs1 rs2 31..25=0  14..12=5 6..2=0x0E 1..0=3",
+	 "sraw    rd rs1 rs2 31..25=32 14..12=5 6..2=0x0E 1..0=3",
+	 "lb      rd rs1       imm12 14..12=0 6..2=0x00 1..0=3",
+	 "lh      rd rs1       imm12 14..12=1 6..2=0x00 1..0=3",
+	 "lw      rd rs1       imm12 14..12=2 6..2=0x00 1..0=3",
+	 "ld      rd rs1       imm12 14..12=3 6..2=0x00 1..0=3",
+	 "lbu     rd rs1       imm12 14..12=4 6..2=0x00 1..0=3",
+	 "lhu     rd rs1       imm12 14..12=5 6..2=0x00 1..0=3",
+	 "lwu     rd rs1       imm12 14..12=6 6..2=0x00 1..0=3",
+	 "sb     imm12hi rs1 rs2 imm12lo 14..12=0 6..2=0x08 1..0=3",
+	 "sh     imm12hi rs1 rs2 imm12lo 14..12=1 6..2=0x08 1..0=3",
+	 "sw     imm12hi rs1 rs2 imm12lo 14..12=2 6..2=0x08 1..0=3",
+	 "sd     imm12hi rs1 rs2 imm12lo 14..12=3 6..2=0x08 1..0=3",
+	 "fence       fm            pred succ     rs1 14..12=0 rd 6..2=0x03 1..0=3",
+	 "fence.i     imm12                       rs1 14..12=1 rd 6..2=0x03 1..0=3",
+	 /*
+	    // RV32M
+	    "mul     rd rs1 rs2 31..25=1 14..12=0 6..2=0x0C 1..0=3",
+	    "mulh    rd rs1 rs2 31..25=1 14..12=1 6..2=0x0C 1..0=3",
+	    "mulhsu  rd rs1 rs2 31..25=1 14..12=2 6..2=0x0C 1..0=3",
+	    "mulhu   rd rs1 rs2 31..25=1 14..12=3 6..2=0x0C 1..0=3",
+	    "div     rd rs1 rs2 31..25=1 14..12=4 6..2=0x0C 1..0=3",
+	    "divu    rd rs1 rs2 31..25=1 14..12=5 6..2=0x0C 1..0=3",
+	    "rem     rd rs1 rs2 31..25=1 14..12=6 6..2=0x0C 1..0=3",
+	    "remu    rd rs1 rs2 31..25=1 14..12=7 6..2=0x0C 1..0=3",
+	    // RV64M
+	    "mulw    rd rs1 rs2 31..25=1 14..12=0 6..2=0x0E 1..0=3",
+	    "divw    rd rs1 rs2 31..25=1 14..12=4 6..2=0x0E 1..0=3",
+	    "divuw   rd rs1 rs2 31..25=1 14..12=5 6..2=0x0E 1..0=3",
+	    "remw    rd rs1 rs2 31..25=1 14..12=6 6..2=0x0E 1..0=3",
+	    "remuw   rd rs1 rs2 31..25=1 14..12=7 6..2=0x0E 1..0=3",
+	    // RV32A
+	    "amoadd.w    rd rs1 rs2      aqrl 31..29=0 28..27=0 14..12=2 6..2=0x0B 1..0=3",
+	    "amoxor.w    rd rs1 rs2      aqrl 31..29=1 28..27=0 14..12=2 6..2=0x0B 1..0=3",
+	    "amoor.w     rd rs1 rs2      aqrl 31..29=2 28..27=0 14..12=2 6..2=0x0B 1..0=3",
+	    "amoand.w    rd rs1 rs2      aqrl 31..29=3 28..27=0 14..12=2 6..2=0x0B 1..0=3",
+	    "amomin.w    rd rs1 rs2      aqrl 31..29=4 28..27=0 14..12=2 6..2=0x0B 1..0=3",
+	    "amomax.w    rd rs1 rs2      aqrl 31..29=5 28..27=0 14..12=2 6..2=0x0B 1..0=3",
+	    "amominu.w   rd rs1 rs2      aqrl 31..29=6 28..27=0 14..12=2 6..2=0x0B 1..0=3",
+	    "amomaxu.w   rd rs1 rs2      aqrl 31..29=7 28..27=0 14..12=2 6..2=0x0B 1..0=3",
+	    "amoswap.w   rd rs1 rs2      aqrl 31..29=0 28..27=1 14..12=2 6..2=0x0B 1..0=3",
+	    "lr.w        rd rs1 24..20=0 aqrl 31..29=0 28..27=2 14..12=2 6..2=0x0B 1..0=3",
+	    "sc.w        rd rs1 rs2      aqrl 31..29=0 28..27=3 14..12=2 6..2=0x0B 1..0=3",
+	    // RV64A
+	    "amoadd.d    rd rs1 rs2      aqrl 31..29=0 28..27=0 14..12=3 6..2=0x0B 1..0=3",
+	    "amoxor.d    rd rs1 rs2      aqrl 31..29=1 28..27=0 14..12=3 6..2=0x0B 1..0=3",
+	    "amoor.d     rd rs1 rs2      aqrl 31..29=2 28..27=0 14..12=3 6..2=0x0B 1..0=3",
+	    "amoand.d    rd rs1 rs2      aqrl 31..29=3 28..27=0 14..12=3 6..2=0x0B 1..0=3",
+	    "amomin.d    rd rs1 rs2      aqrl 31..29=4 28..27=0 14..12=3 6..2=0x0B 1..0=3",
+	    "amomax.d    rd rs1 rs2      aqrl 31..29=5 28..27=0 14..12=3 6..2=0x0B 1..0=3",
+	    "amominu.d   rd rs1 rs2      aqrl 31..29=6 28..27=0 14..12=3 6..2=0x0B 1..0=3",
+	    "amomaxu.d   rd rs1 rs2      aqrl 31..29=7 28..27=0 14..12=3 6..2=0x0B 1..0=3",
+	    "amoswap.d   rd rs1 rs2      aqrl 31..29=0 28..27=1 14..12=3 6..2=0x0B 1..0=3",
+	    "lr.d        rd rs1 24..20=0 aqrl 31..29=0 28..27=2 14..12=3 6..2=0x0B 1..0=3",
+	    "sc.d        rd rs1 rs2      aqrl 31..29=0 28..27=3 14..12=3 6..2=0x0B 1..0=3",
+	    // SYSTEM
+	    "ecall     11..7=0 19..15=0 31..20=0x000 14..12=0 6..2=0x1C 1..0=3",
+	    "ebreak    11..7=0 19..15=0 31..20=0x001 14..12=0 6..2=0x1C 1..0=3",
+	    "uret      11..7=0 19..15=0 31..20=0x002 14..12=0 6..2=0x1C 1..0=3",
+	    "sret      11..7=0 19..15=0 31..20=0x102 14..12=0 6..2=0x1C 1..0=3",
+	    "mret      11..7=0 19..15=0 31..20=0x302 14..12=0 6..2=0x1C 1..0=3",
+	    "dret      11..7=0 19..15=0 31..20=0x7b2 14..12=0 6..2=0x1C 1..0=3",
+	    "sfence.vma 11..7=0 rs1 rs2 31..25=0x09  14..12=0 6..2=0x1C 1..0=3",
+	    "wfi       11..7=0 19..15=0 31..20=0x105 14..12=0 6..2=0x1C 1..0=3",
+	    "csrrw     rd      rs1      imm12        14..12=1 6..2=0x1C 1..0=3",
+	    "csrrs     rd      rs1      imm12        14..12=2 6..2=0x1C 1..0=3",
+	    "csrrc     rd      rs1      imm12        14..12=3 6..2=0x1C 1..0=3",
+	    "csrrwi    rd      rs1      imm12        14..12=5 6..2=0x1C 1..0=3",
+	    "csrrsi    rd      rs1      imm12        14..12=6 6..2=0x1C 1..0=3",
+	    "csrrci    rd      rs1      imm12        14..12=7 6..2=0x1C 1..0=3",
+	    // F/D EXTENSIONS
+	    "fadd.s    rd rs1 rs2      31..27=0x00 rm       26..25=0 6..2=0x14 1..0=3",
+	    "fsub.s    rd rs1 rs2      31..27=0x01 rm       26..25=0 6..2=0x14 1..0=3",
+	    "fmul.s    rd rs1 rs2      31..27=0x02 rm       26..25=0 6..2=0x14 1..0=3",
+	    "fdiv.s    rd rs1 rs2      31..27=0x03 rm       26..25=0 6..2=0x14 1..0=3",
+	    "fsgnj.s   rd rs1 rs2      31..27=0x04 14..12=0 26..25=0 6..2=0x14 1..0=3",
+	    "fsgnjn.s  rd rs1 rs2      31..27=0x04 14..12=1 26..25=0 6..2=0x14 1..0=3",
+	    "fsgnjx.s  rd rs1 rs2      31..27=0x04 14..12=2 26..25=0 6..2=0x14 1..0=3",
+	    "fmin.s    rd rs1 rs2      31..27=0x05 14..12=0 26..25=0 6..2=0x14 1..0=3",
+	    "fmax.s    rd rs1 rs2      31..27=0x05 14..12=1 26..25=0 6..2=0x14 1..0=3",
+	    "fsqrt.s   rd rs1 24..20=0 31..27=0x0B rm       26..25=0 6..2=0x14 1..0=3",
+	    "fadd.d    rd rs1 rs2      31..27=0x00 rm       26..25=1 6..2=0x14 1..0=3",
+	    "fsub.d    rd rs1 rs2      31..27=0x01 rm       26..25=1 6..2=0x14 1..0=3",
+	    "fmul.d    rd rs1 rs2      31..27=0x02 rm       26..25=1 6..2=0x14 1..0=3",
+	    "fdiv.d    rd rs1 rs2      31..27=0x03 rm       26..25=1 6..2=0x14 1..0=3",
+	    "fsgnj.d   rd rs1 rs2      31..27=0x04 14..12=0 26..25=1 6..2=0x14 1..0=3",
+	    "fsgnjn.d  rd rs1 rs2      31..27=0x04 14..12=1 26..25=1 6..2=0x14 1..0=3",
+	    "fsgnjx.d  rd rs1 rs2      31..27=0x04 14..12=2 26..25=1 6..2=0x14 1..0=3",
+	    "fmin.d    rd rs1 rs2      31..27=0x05 14..12=0 26..25=1 6..2=0x14 1..0=3",
+	    "fmax.d    rd rs1 rs2      31..27=0x05 14..12=1 26..25=1 6..2=0x14 1..0=3",
+	    "fcvt.s.d  rd rs1 24..20=1 31..27=0x08 rm       26..25=0 6..2=0x14 1..0=3",
+	    "fcvt.d.s  rd rs1 24..20=0 31..27=0x08 rm       26..25=1 6..2=0x14 1..0=3",
+	    "fsqrt.d   rd rs1 24..20=0 31..27=0x0B rm       26..25=1 6..2=0x14 1..0=3",
+	    "fadd.q    rd rs1 rs2      31..27=0x00 rm       26..25=3 6..2=0x14 1..0=3",
+	    "fsub.q    rd rs1 rs2      31..27=0x01 rm       26..25=3 6..2=0x14 1..0=3",
+	    "fmul.q    rd rs1 rs2      31..27=0x02 rm       26..25=3 6..2=0x14 1..0=3",
+	    "fdiv.q    rd rs1 rs2      31..27=0x03 rm       26..25=3 6..2=0x14 1..0=3",
+	    "fsgnj.q   rd rs1 rs2      31..27=0x04 14..12=0 26..25=3 6..2=0x14 1..0=3",
+	    "fsgnjn.q  rd rs1 rs2      31..27=0x04 14..12=1 26..25=3 6..2=0x14 1..0=3",
+	    "fsgnjx.q  rd rs1 rs2      31..27=0x04 14..12=2 26..25=3 6..2=0x14 1..0=3",
+	    "fmin.q    rd rs1 rs2      31..27=0x05 14..12=0 26..25=3 6..2=0x14 1..0=3",
+	    "fmax.q    rd rs1 rs2      31..27=0x05 14..12=1 26..25=3 6..2=0x14 1..0=3",
+	    "fcvt.s.q  rd rs1 24..20=3 31..27=0x08 rm       26..25=0 6..2=0x14 1..0=3",
+	    "fcvt.q.s  rd rs1 24..20=0 31..27=0x08 rm       26..25=3 6..2=0x14 1..0=3",
+	    "fcvt.d.q  rd rs1 24..20=3 31..27=0x08 rm       26..25=1 6..2=0x14 1..0=3",
+	    "fcvt.q.d  rd rs1 24..20=1 31..27=0x08 rm       26..25=3 6..2=0x14 1..0=3",
+	    "fsqrt.q   rd rs1 24..20=0 31..27=0x0B rm       26..25=3 6..2=0x14 1..0=3",
+	    "fle.s     rd rs1 rs2      31..27=0x14 14..12=0 26..25=0 6..2=0x14 1..0=3",
+	    "flt.s     rd rs1 rs2      31..27=0x14 14..12=1 26..25=0 6..2=0x14 1..0=3",
+	    "feq.s     rd rs1 rs2      31..27=0x14 14..12=2 26..25=0 6..2=0x14 1..0=3",
+	    "fle.d     rd rs1 rs2      31..27=0x14 14..12=0 26..25=1 6..2=0x14 1..0=3",
+	    "flt.d     rd rs1 rs2      31..27=0x14 14..12=1 26..25=1 6..2=0x14 1..0=3",
+	    "feq.d     rd rs1 rs2      31..27=0x14 14..12=2 26..25=1 6..2=0x14 1..0=3",
+	    "fle.q     rd rs1 rs2      31..27=0x14 14..12=0 26..25=3 6..2=0x14 1..0=3",
+	    "flt.q     rd rs1 rs2      31..27=0x14 14..12=1 26..25=3 6..2=0x14 1..0=3",
+	    "feq.q     rd rs1 rs2      31..27=0x14 14..12=2 26..25=3 6..2=0x14 1..0=3",
+	    "fcvt.w.s  rd rs1 24..20=0 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3",
+	    "fcvt.wu.s rd rs1 24..20=1 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3",
+	    "fcvt.l.s  rd rs1 24..20=2 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3",
+	    "fcvt.lu.s rd rs1 24..20=3 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3",
+	    "fmv.x.w   rd rs1 24..20=0 31..27=0x1C 14..12=0 26..25=0 6..2=0x14 1..0=3",
+	    "fclass.s  rd rs1 24..20=0 31..27=0x1C 14..12=1 26..25=0 6..2=0x14 1..0=3",
+	    "fcvt.w.d  rd rs1 24..20=0 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3",
+	    "fcvt.wu.d rd rs1 24..20=1 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3",
+	    "fcvt.l.d  rd rs1 24..20=2 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3",
+	    "fcvt.lu.d rd rs1 24..20=3 31..27=0x18 rm       26..25=1 6..2=0x14 1..0=3",
+	    "fmv.x.d   rd rs1 24..20=0 31..27=0x1C 14..12=0 26..25=1 6..2=0x14 1..0=3",
+	    "fclass.d  rd rs1 24..20=0 31..27=0x1C 14..12=1 26..25=1 6..2=0x14 1..0=3",
+	    "fcvt.w.q  rd rs1 24..20=0 31..27=0x18 rm       26..25=3 6..2=0x14 1..0=3",
+	    "fcvt.wu.q rd rs1 24..20=1 31..27=0x18 rm       26..25=3 6..2=0x14 1..0=3",
+	    "fcvt.l.q  rd rs1 24..20=2 31..27=0x18 rm       26..25=3 6..2=0x14 1..0=3",
+	    "fcvt.lu.q rd rs1 24..20=3 31..27=0x18 rm       26..25=3 6..2=0x14 1..0=3",
+	    "fmv.x.q   rd rs1 24..20=0 31..27=0x1C 14..12=0 26..25=3 6..2=0x14 1..0=3",
+	    "fclass.q  rd rs1 24..20=0 31..27=0x1C 14..12=1 26..25=3 6..2=0x14 1..0=3",
+	    "fcvt.s.w  rd rs1 24..20=0 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3",
+	    "fcvt.s.wu rd rs1 24..20=1 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3",
+	    "fcvt.s.l  rd rs1 24..20=2 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3",
+	    "fcvt.s.lu rd rs1 24..20=3 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3",
+	    "fmv.w.x   rd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=0 6..2=0x14 1..0=3",
+	    "fcvt.d.w  rd rs1 24..20=0 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3",
+	    "fcvt.d.wu rd rs1 24..20=1 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3",
+	    "fcvt.d.l  rd rs1 24..20=2 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3",
+	    "fcvt.d.lu rd rs1 24..20=3 31..27=0x1A rm       26..25=1 6..2=0x14 1..0=3",
+	    "fmv.d.x   rd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=1 6..2=0x14 1..0=3",
+	    "fcvt.q.w  rd rs1 24..20=0 31..27=0x1A rm       26..25=3 6..2=0x14 1..0=3",
+	    "fcvt.q.wu rd rs1 24..20=1 31..27=0x1A rm       26..25=3 6..2=0x14 1..0=3",
+	    "fcvt.q.l  rd rs1 24..20=2 31..27=0x1A rm       26..25=3 6..2=0x14 1..0=3",
+	    "fcvt.q.lu rd rs1 24..20=3 31..27=0x1A rm       26..25=3 6..2=0x14 1..0=3",
+	    "fmv.q.x   rd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=3 6..2=0x14 1..0=3",
+	    "flw       rd rs1 imm12 14..12=2 6..2=0x01 1..0=3",
+	    "fld       rd rs1 imm12 14..12=3 6..2=0x01 1..0=3",
+	    "flq       rd rs1 imm12 14..12=4 6..2=0x01 1..0=3",
+	    "fsw       imm12hi rs1 rs2 imm12lo 14..12=2 6..2=0x09 1..0=3",
+	    "fsd       imm12hi rs1 rs2 imm12lo 14..12=3 6..2=0x09 1..0=3",
+	    "fsq       imm12hi rs1 rs2 imm12lo 14..12=4 6..2=0x09 1..0=3",
+	    "fmadd.s   rd rs1 rs2 rs3 rm 26..25=0 6..2=0x10 1..0=3",
+	    "fmsub.s   rd rs1 rs2 rs3 rm 26..25=0 6..2=0x11 1..0=3",
+	    "fnmsub.s  rd rs1 rs2 rs3 rm 26..25=0 6..2=0x12 1..0=3",
+	    "fnmadd.s  rd rs1 rs2 rs3 rm 26..25=0 6..2=0x13 1..0=3",
+	    "fmadd.d   rd rs1 rs2 rs3 rm 26..25=1 6..2=0x10 1..0=3",
+	    "fmsub.d   rd rs1 rs2 rs3 rm 26..25=1 6..2=0x11 1..0=3",
+	    "fnmsub.d  rd rs1 rs2 rs3 rm 26..25=1 6..2=0x12 1..0=3",
+	    "fnmadd.d  rd rs1 rs2 rs3 rm 26..25=1 6..2=0x13 1..0=3",
+	    "fmadd.q   rd rs1 rs2 rs3 rm 26..25=3 6..2=0x10 1..0=3",
+	    "fmsub.q   rd rs1 rs2 rs3 rm 26..25=3 6..2=0x11 1..0=3",
+	    "fnmsub.q  rd rs1 rs2 rs3 rm 26..25=3 6..2=0x12 1..0=3",
+	    "fnmadd.q  rd rs1 rs2 rs3 rm 26..25=3 6..2=0x13 1..0=3",
+	  */
+     ]
+
+     let instructions = []
+     function manipulate(c) {
+	 if (c == 'j') {
+	     let n = 0
+	     instructions = riscv_opcodes.map(s => {
+		 let parts = s.split(/\s+/)
+		 let rest = _.rest(parts)
+		 let keys = rest.map((e, i) => i)
+		 n = Math.max(n, keys.length)
+		 rest = _.object(keys, rest)
+		 return {instruction: _.first(parts), ...rest}
+	     })
+	     tabulate(instructions, ['instruction', ...Array(n).keys()])
+	 } else if (c == 'k') {
+	     let n = 0
+	     instructions = instructions.map(keys => {
+		 n = Math.max(n, _.keys(keys).length)
+		 keys = _.mapObject(keys, (v, k) => {
+		     let [a, b] = v.split('=')
+		     if (b) {
+			 let [y, x] = a.split('..')
+			 let mask = BigInt(b) << BigInt(x)
+			 return mask
+		     }
+		     return v
+		 })
+		 return keys
+	     })
+	     tabulate(instructions, ['instruction', ...Array(n).keys()])
+	 }
+     }
+     
+     /*
+	let types = {
+	R: 'funct7 rs2 rs1 funct3 rd opcode',
+	I: 'imm[11:0] rs1 funct3 rd opcode',
+	S: 'imm[11:5] rs2 rs1 funct3 imm[4:0] opcode',
+	U: 'imm[31:12] rd opcode',
+	}
+
+	let riscv = [
+	// the three bits for func3 are the enumeration of all of the instructions
+	[19, 'I', ['ADDI', 'SLTI', 'SLTIU', 'XORI', 'ORI', 'ANDI']],
+	[51, 'R', ['ADD', 'SLL', 'SLT', 'SLTU', 'XOR', 'SRL', 'SRA', 'OR', 'AND']],
+	]
+	let func7 = {
+	// SUB is like ADD except that it has 0100000 instead of 0 for func7
+	SUB: ['ADD', 32],
+	SRA: ['SRL', 32],
+	}
+	let fields = {
+	//I: [12,    5, 3, 5, 7],
+	I: 'im:12 rs:5 f:3 rd:5 op:7',
+	R: [7,  5, 5, 3, 5, 7]
+	}
+
+	riscv.map(s => {
+	let [op, ty, is] = s
+	is.map(i => {	
+	fields.I.split(' ').map(f => {
+	let [x, n] = f.split(':')
+	console.log(f)
+	})
+	})
+	})
+
+	
+	let bits = f => {
+	let [x, n] = f.split(':')
+	return x.toString(2).padStart(n, '0')
+	}
+      */
+     //console.log(field_lengths['I'].split(' ').map(f => bits(f)))
+
+     
+
+
+     /*
+	let bits = (x, n) => x.toString(2).padStart(n, '0')
+	let i = 123
+	let rs1 = 3
+	let rd = 7
+	console.log(bits(i, 12) + bits(rs1, 5) + bits(0, 3) + bits(rd, 5) + bits(19, 7))
+	let field_lengths = [12, 5, 3, 5, 7]
+	let fields = [i, rs1, 0, rd, 19]
+	console.log(field_lengths.map((a, i) => bits(fields[i], a)).join(''))
+      */
+     
+     
+     let data = [
 	 {name: 'DROP', description: 'a — '},
 	 {name: 'SWAP', description: 'a b — b a'},
 	 {name: 'DUP', description: 'a — a a'},
@@ -104,42 +415,44 @@
 	 {name: "@", description: 'addr — n'},
 	 {name: "+!", description: 'n addr —'},
 	 {name: "-!", description: 'n addr —'},
-	 {name: "C!", description: '—'},
-	 {name: "C@", description: '—'},
-	 {name: "C@C!", description: '—'},
-	 {name: "CMOVE", description: '—'},
-	 {name: ">R", description: '—'},
-	 {name: "R>", description: '—'},
-	 {name: "RSP@", description: '—'},
-	 {name: "RSP!", description: '—'},
-	 {name: "RDROP", description: '—'},
-	 {name: "DSP@", description: '—'},
-	 {name: "DSP!", description: '—'},
-	 {name: "KEY", description: '—'},
-	 {name: "EMIT", description: '—'},
-	 {name: "WORD", description: '—'},
-	 {name: "NUMBER", description: '—'},
-	 {name: "FIND", description: '—'},
-	 {name: ">CFA", description: '—'},
-	 {name: ">DFA", description: '—'},
-	 {name: "CREATE", description: '—'},
-	 {name: ",", description: '—'},
-	 {name: "[", description: '—'},
-	 {name: "]", description: '—'},
-	 {name: ":", description: '—'},
-	 {name: ";", description: '—'},
-	 {name: "IMMEDIATE", description: '—'},
-	 {name: "HIDDEN", description: '—'},
-	 {name: "HIDE", description: '—'},
-	 {name: "'", description: '—'},
-	 {name: "BRANCH", description: '—'},
-	 {name: "0BRANCH", description: '—'},
-	 {name: "LITSTRING", description: '—'},
-	 {name: "TELL", description: '—'},
-	 {name: "QUIT", description: '—'},
-	 {name: "INTERPRET", description: '—'},
-	 {name: "CHAR", description: '—'},
-	 {name: "EXECUTE", description: '—'},
+	 /*
+	    {name: "C!", description: '—'},
+	    {name: "C@", description: '—'},
+	    {name: "C@C!", description: '—'},
+	    {name: "CMOVE", description: '—'},
+	    {name: ">R", description: '—'},
+	    {name: "R>", description: '—'},
+	    {name: "RSP@", description: '—'},
+	    {name: "RSP!", description: '—'},
+	    {name: "RDROP", description: '—'},
+	    {name: "DSP@", description: '—'},
+	    {name: "DSP!", description: '—'},
+	    {name: "KEY", description: '—'},
+	    {name: "EMIT", description: '—'},
+	    {name: "WORD", description: '—'},
+	    {name: "NUMBER", description: '—'},
+	    {name: "FIND", description: '—'},
+	    {name: ">CFA", description: '—'},
+	    {name: ">DFA", description: '—'},
+	    {name: "CREATE", description: '—'},
+	    {name: ",", description: '—'},
+	    {name: "[", description: '—'},
+	    {name: "]", description: '—'},
+	    {name: ":", description: '—'},
+	    {name: ";", description: '—'},
+	    {name: "IMMEDIATE", description: '—'},
+	    {name: "HIDDEN", description: '—'},
+	    {name: "HIDE", description: '—'},
+	    {name: "'", description: '—'},
+	    {name: "BRANCH", description: '—'},
+	    {name: "0BRANCH", description: '—'},
+	    {name: "LITSTRING", description: '—'},
+	    {name: "TELL", description: '—'},
+	    {name: "QUIT", description: '—'},
+	    {name: "INTERPRET", description: '—'},
+	    {name: "CHAR", description: '—'},
+	    {name: "EXECUTE", description: '—'},
+	  */
      ]
 
      let stack = []
@@ -172,7 +485,7 @@
 
 	 let [before, after] = d.split(/\s*—\s*/).map(s => s ? s.split(' ') : [])
 	 before = before.reverse().map(v => `let ${v} = stack.pop()`)
-	 after = after.map(v => `stack.push(${v})`)
+	 after = after ? after.map(v => `stack.push(${v})`) : ''
 	 return before.concat(after).join('; ')
      }
 
@@ -203,26 +516,17 @@
 			 })
 			 .enter()
 			 .append('td')
-	                 .classed('code', d => d.column == 'js')
+			 .classed('code', d => d.column == 'js')
 			 .text(function (d) { return d.value; });
 
 	 return table;
      }
      
      function update() {
-	 tabulate(data, ['name', 'description'])
-	 /*
-	    for (let row of rows) {
-	    let [id, data] = row
-	    //var t = d3.select(id).selectAll("td").data(data).text(d => d)
-	    //t.enter().append("td").text(d => d)
-	    var t = d3.select(id).selectAll("tr").data(data).text(d => d)
-	    t.enter().append("tr").text(d => d)
-	    t.exit().remove()
-	    }
-	  */
+	 tabulate(riscv_opcodes.map(s => ({word: s})), ['word'])
+	 //tabulate(data, ['name', 'description'])
 	 
-         $("tr td").click(function(e) {
+	 $("tr td").click(function(e) {
 	     $("tr td").removeClass("highlighted")
 	     $(this).toggleClass("highlighted")
 	 })
@@ -260,6 +564,12 @@
 		 d['js'] = compile_description(d['description'])
 	     }
 	     tabulate(data, ['name', 'description', 'js'])
+	 } else if (c == 'q') {
+	     tabulate(forth_memory, ['address', 'char', 'hex'])
+	 } else if (c == 'w') {
+	     tabulate(forth_memory_pretty, ['address', 'word', 'literal'])
+	 } else if (c == 'j' || c == 'k' || c == 'l' || c == ':') {
+	     manipulate(c)
 	 }
      })
     </script>
