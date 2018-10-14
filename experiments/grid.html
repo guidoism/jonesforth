@@ -300,15 +300,17 @@
 	     let inst = instructions.map(s => named(s, ['instruction']))
 	     tabulate(inst, ['instruction', ...Array(width-1).keys()])
 	 } else if (c == 'k') {
-	     let inst = instructions.map(s => s.map(v => {
-		 let [a, b] = v.split('=')
-		 if (b) {
+	     let inst = instructions.map(i => {
+		 let [masks, rest] = _.partition(i, v => v.includes('='))
+		 masks = masks.map(v => {
+		     let [a, b] = v.split('=')
 		     let [y, x] = a.split('..')
-		     let mask = BigInt(b) << BigInt(x)
-		     return mask
-		 }
-		 return v
-	     }))
+		     return BigInt(b) << BigInt(x)
+		 })
+		 let mask = masks.reduce((x,y)=>x|y).toString(2)
+		 return _.union([_.first(rest)], [mask], _.rest(rest))
+	     })
+	     
 	     inst = inst.map(s => named(s, ['instruction']))
 	     tabulate(inst, ['instruction', ...Array(width-1).keys()])
 	 }
