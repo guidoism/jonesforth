@@ -287,94 +287,32 @@
 	  */
      ]
 
+     function named(a, names) {
+	 return _.object(_.zip(names.concat(...Array(a.length-names.length).keys()), a))
+     }
+
+     let width = 0
      let instructions = []
      function manipulate(c) {
 	 if (c == 'j') {
-	     let n = 0
-	     instructions = riscv_opcodes.map(s => {
-		 let parts = s.split(/\s+/)
-		 let rest = _.rest(parts)
-		 let keys = rest.map((e, i) => i)
-		 n = Math.max(n, keys.length)
-		 rest = _.object(keys, rest)
-		 return {instruction: _.first(parts), ...rest}
-	     })
-	     tabulate(instructions, ['instruction', ...Array(n).keys()])
+	     instructions = riscv_opcodes.map(s => s.split(/\s+/))
+	     width = _.max(instructions.map(s => s.length))
+	     let inst = instructions.map(s => named(s, ['instruction']))
+	     tabulate(inst, ['instruction', ...Array(width-1).keys()])
 	 } else if (c == 'k') {
-	     let n = 0
-	     instructions = instructions.map(keys => {
-		 n = Math.max(n, _.keys(keys).length)
-		 keys = _.mapObject(keys, (v, k) => {
-		     let [a, b] = v.split('=')
-		     if (b) {
-			 let [y, x] = a.split('..')
-			 let mask = BigInt(b) << BigInt(x)
-			 return mask
-		     }
-		     return v
-		 })
-		 return keys
-	     })
-	     tabulate(instructions, ['instruction', ...Array(n).keys()])
+	     let inst = instructions.map(s => s.map(v => {
+		 let [a, b] = v.split('=')
+		 if (b) {
+		     let [y, x] = a.split('..')
+		     let mask = BigInt(b) << BigInt(x)
+		     return mask
+		 }
+		 return v
+	     }))
+	     inst = inst.map(s => named(s, ['instruction']))
+	     tabulate(inst, ['instruction', ...Array(width-1).keys()])
 	 }
-     }
-     
-     /*
-	let types = {
-	R: 'funct7 rs2 rs1 funct3 rd opcode',
-	I: 'imm[11:0] rs1 funct3 rd opcode',
-	S: 'imm[11:5] rs2 rs1 funct3 imm[4:0] opcode',
-	U: 'imm[31:12] rd opcode',
-	}
-
-	let riscv = [
-	// the three bits for func3 are the enumeration of all of the instructions
-	[19, 'I', ['ADDI', 'SLTI', 'SLTIU', 'XORI', 'ORI', 'ANDI']],
-	[51, 'R', ['ADD', 'SLL', 'SLT', 'SLTU', 'XOR', 'SRL', 'SRA', 'OR', 'AND']],
-	]
-	let func7 = {
-	// SUB is like ADD except that it has 0100000 instead of 0 for func7
-	SUB: ['ADD', 32],
-	SRA: ['SRL', 32],
-	}
-	let fields = {
-	//I: [12,    5, 3, 5, 7],
-	I: 'im:12 rs:5 f:3 rd:5 op:7',
-	R: [7,  5, 5, 3, 5, 7]
-	}
-
-	riscv.map(s => {
-	let [op, ty, is] = s
-	is.map(i => {	
-	fields.I.split(' ').map(f => {
-	let [x, n] = f.split(':')
-	console.log(f)
-	})
-	})
-	})
-
-	
-	let bits = f => {
-	let [x, n] = f.split(':')
-	return x.toString(2).padStart(n, '0')
-	}
-      */
-     //console.log(field_lengths['I'].split(' ').map(f => bits(f)))
-
-     
-
-
-     /*
-	let bits = (x, n) => x.toString(2).padStart(n, '0')
-	let i = 123
-	let rs1 = 3
-	let rd = 7
-	console.log(bits(i, 12) + bits(rs1, 5) + bits(0, 3) + bits(rd, 5) + bits(19, 7))
-	let field_lengths = [12, 5, 3, 5, 7]
-	let fields = [i, rs1, 0, rd, 19]
-	console.log(field_lengths.map((a, i) => bits(fields[i], a)).join(''))
-      */
-     
+     }     
      
      let data = [
 	 {name: 'DROP', description: 'a — '},
