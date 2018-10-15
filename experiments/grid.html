@@ -314,7 +314,33 @@
 	     inst = inst.map(s => named(s, ['instruction']))
 	     tabulate(inst, ['instruction', ...Array(width-1).keys()])
 	 }
-     }     
+     }
+
+     let shift = (x, n) => BigInt(x) << BigInt(n)
+     let trunc = (x, n, m) => BigInt(x) && BigInt(Math.pow(2, m-n)-1)
+     let trunc_shift = (x, list) => list.map(a => shift(trunc(x, a[0], a[1]), a[2])).reduce((a, b) => a|b)
+     let registers = {
+	 I: {
+	     rd:  x => shift(x, 7),
+	     rs1: x => shift(x, 15),
+	     rs2: x => shift(x, 20),
+	 },
+	 I: {
+	     rd:  x => shift(x, 7),
+	     rs1: x => shift(x, 15),
+	     imm: x => shift(x, 20),
+	 },
+	 S: {
+	     imm: x => trunc_shift(x, [[0, 6, 7], [6, 12, 25]]),
+	     rs1: x => shift(x, 15),
+	     rs2: x => shift(x, 20),
+	 },
+	 SB: {
+	     imm: x => trunc_shift(x, [[11, 12, 7], [1, 5, 8], [5, 11, 25], [12, 13, 31]]),
+	     rs1: x => shift(x, 15),
+	     rs2: x => shift(x, 20),
+	 },
+     }
      
      let data = [
 	 {name: 'DROP', description: 'a — '},
