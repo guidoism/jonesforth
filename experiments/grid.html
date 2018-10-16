@@ -87,8 +87,8 @@
 	 "bge     bimm12hi rs1 rs2 bimm12lo 14..12=5 6..2=0x18 1..0=3",
 	 "bltu    bimm12hi rs1 rs2 bimm12lo 14..12=6 6..2=0x18 1..0=3",
 	 "bgeu    bimm12hi rs1 rs2 bimm12lo 14..12=7 6..2=0x18 1..0=3",
-	 "jalr    rd rs1 imm12              14..12=0 6..2=0x19 1..0=3",
-	 "jal     rd jimm20                          6..2=0x1b 1..0=3",
+	 //"jalr    rd rs1 imm12              14..12=0 6..2=0x19 1..0=3",
+	 //"jal     rd jimm20                          6..2=0x1b 1..0=3",
 	 "lui     rd imm20 6..2=0x0D 1..0=3",
 	 "auipc   rd imm20 6..2=0x05 1..0=3",
 	 "addi    rd rs1 imm12           14..12=0 6..2=0x04 1..0=3",
@@ -130,8 +130,8 @@
 	 "sh     imm12hi rs1 rs2 imm12lo 14..12=1 6..2=0x08 1..0=3",
 	 "sw     imm12hi rs1 rs2 imm12lo 14..12=2 6..2=0x08 1..0=3",
 	 "sd     imm12hi rs1 rs2 imm12lo 14..12=3 6..2=0x08 1..0=3",
-	 "fence       fm            pred succ     rs1 14..12=0 rd 6..2=0x03 1..0=3",
-	 "fence.i     imm12                       rs1 14..12=1 rd 6..2=0x03 1..0=3",
+	 //"fence       fm            pred succ     rs1 14..12=0 rd 6..2=0x03 1..0=3",
+	 //"fence.i     imm12                       rs1 14..12=1 rd 6..2=0x03 1..0=3",
 	 /*
 	    // RV32M
 	    "mul     rd rs1 rs2 31..25=1 14..12=0 6..2=0x0C 1..0=3",
@@ -287,6 +287,26 @@
 	  */
      ]
 
+     let reg_translate = {
+	 bimm12hi: "imm",
+	 bimm12lo: "imm",
+	 bimm20: "imm",
+	 imm20: "imm",
+	 imm12: "imm",
+	 imm12hi: "imm",
+	 imm12lo: "imm",
+	 shamtw: "shamt",
+     }
+
+     let reg_to_type = {
+	 immrs1rs2: "I",
+ 	 rdrs1rs2: "R",
+	 immrs1rs2: "S",
+ 	 rdrs1shamt: "I",
+	 immrd: "U", // or UJ
+	 immrdrs1: "I",
+     }
+     
      function named(a, names) {
 	 return _.object(_.zip(names.concat(...Array(a.length-names.length).keys()), a))
      }
@@ -300,7 +320,7 @@
 	     let inst = instructions.map(s => named(s, ['instruction']))
 	     tabulate(inst, ['instruction', ...Array(width-1).keys()])
 	 } else if (c == 'k') {
-	     let inst = instructions.map(i => {
+	     instructions = instructions.map(i => {
 		 let [masks, rest] = _.partition(i, v => v.includes('='))
 		 masks = masks.map(v => {
 		     let [a, b] = v.split('=')
@@ -311,8 +331,15 @@
 		 return _.union([_.first(rest)], [mask], _.rest(rest))
 	     })
 	     
-	     inst = inst.map(s => named(s, ['instruction']))
-	     tabulate(inst, ['instruction', ...Array(width-1).keys()])
+	     let inst = instructions.map(s => named(s, ['instruction', 'mask']))
+	     tabulate(inst, ['instruction', 'mask', ...Array(width-1).keys()])
+	 } else if (c == 'l') {
+	     instructions = instructions.map(i => {
+		 let regs = _.uniq(i.slice(2).map(r => reg_translate[r] || r)).sort().join('')
+		 return [i[0], i[1], reg_to_type[regs]]
+	     })
+	     let inst = instructions.map(s => named(s, ['instruction', 'mask', 'format']))
+	     tabulate(inst, ['instruction', 'mask', 'format'])
 	 }
      }
 
@@ -502,7 +529,10 @@
 
      $("body").keypress(function(event) {
 	 let c = String.fromCharCode(event.which)
-	 if (event.which == 8) keys.pop()
+	 if (event.key == 'Enter') {
+	     console.log(keys)
+	 }
+	 else if (event.which == 8) keys.pop()
 	 else keys.push(c)
 	 update_terminal()
 	 if (c == 'f') {
