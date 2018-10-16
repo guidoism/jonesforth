@@ -194,5 +194,5 @@
 	    "fmadd.q   rd rs1 rs2 rs3 rm 26..25=3 6..2=0x10 1..0=3",
 	    "fmsub.q   rd rs1 rs2 rs3 rm 26..25=3 6..2=0x11 1..0=3",
 	    "fnmsub.q  rd rs1 rs2 rs3 rm 26..25=3 6..2=0x12 1..0=3",
-	    "fnmadd.q  rd rs1 rs2 rs3 rm 26..25=3 6..2=0x13 1..0=3",
+	    "fnmadd.q  rd rs1 rs2 rs3 rm 26..25=3 6..2=0x13 1..0=3"
      ]
