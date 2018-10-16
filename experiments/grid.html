@@ -167,84 +167,10 @@
 	 },
      }
      
-     let data = [
-	 {name: 'DROP', description: 'a — '},
-	 {name: 'SWAP', description: 'a b — b a'},
-	 {name: 'DUP', description: 'a — a a'},
-	 {name: "OVER", description: 'a b — a b a'},
-	 {name: "ROT", description: 'a b c — b c a'},
-	 {name: "-ROT", description: 'a b c — c a b'},
-	 {name: "2DROP", description: 'a b —'},
-	 {name: "2DUP", description: 'a b — a b a b'},
-	 {name: "2SWAP", description: 'a b c d — c d a b'},
-	 {name: "?DUP", description: '0 — | a — a a'},
-	 {name: "INCR", description: 'n — n+1'},
-	 {name: "DECR", description: 'n — n-1'},
-	 {name: "INCR4", description: 'n — n+4'},
-	 {name: "DECR4", description: 'n — n-4'},
-	 {name: "+", description: 'n m — n+m'},
-	 {name: "-", description: 'n m — n-m'},
-	 {name: "*", description: 'n m — n×m'},
-	 {name: "/MOD", description: 'n m — n%m n÷m'},
-	 {name: "=", description: 'n m — n=m'},
-	 {name: "<>", description: 'n m — n≠m'},
-	 {name: "<", description: 'n m — n<m'},
-	 {name: ">", description: 'n m — n>m'},
-	 {name: "<=", description: 'n m — n≤m'},
-	 {name: ">=", description: 'n m — n≥m'},
-	 {name: "0=", description: 'n — n=0'},
-	 {name: "0<>", description: 'n — n≠0'},
-	 {name: "0<", description: 'n — 0<n'},
-	 {name: "0>", description: 'n — 0>n'},
-	 {name: "0<=", description: 'n — 0≤n'},
-	 {name: "AND", description: 'q r — q⋀r'},
-	 {name: "OR", description: 'q r — q⋁r'},
-	 {name: "XOR", description: 'q r r'},
-	 {name: "INVERT", description: 'q — ~r'},
-	 {name: "LIT", description: '— a'},
-	 {name: "!", description: 'n addr —'},
-	 {name: "@", description: 'addr — n'},
-	 {name: "+!", description: 'n addr —'},
-	 {name: "-!", description: 'n addr —'},
-	 /*
-	    {name: "C!", description: '—'},
-	    {name: "C@", description: '—'},
-	    {name: "C@C!", description: '—'},
-	    {name: "CMOVE", description: '—'},
-	    {name: ">R", description: '—'},
-	    {name: "R>", description: '—'},
-	    {name: "RSP@", description: '—'},
-	    {name: "RSP!", description: '—'},
-	    {name: "RDROP", description: '—'},
-	    {name: "DSP@", description: '—'},
-	    {name: "DSP!", description: '—'},
-	    {name: "KEY", description: '—'},
-	    {name: "EMIT", description: '—'},
-	    {name: "WORD", description: '—'},
-	    {name: "NUMBER", description: '—'},
-	    {name: "FIND", description: '—'},
-	    {name: ">CFA", description: '—'},
-	    {name: ">DFA", description: '—'},
-	    {name: "CREATE", description: '—'},
-	    {name: ",", description: '—'},
-	    {name: "[", description: '—'},
-	    {name: "]", description: '—'},
-	    {name: ":", description: '—'},
-	    {name: ";", description: '—'},
-	    {name: "IMMEDIATE", description: '—'},
-	    {name: "HIDDEN", description: '—'},
-	    {name: "HIDE", description: '—'},
-	    {name: "'", description: '—'},
-	    {name: "BRANCH", description: '—'},
-	    {name: "0BRANCH", description: '—'},
-	    {name: "LITSTRING", description: '—'},
-	    {name: "TELL", description: '—'},
-	    {name: "QUIT", description: '—'},
-	    {name: "INTERPRET", description: '—'},
-	    {name: "CHAR", description: '—'},
-	    {name: "EXECUTE", description: '—'},
-	  */
-     ]
+     let forth_words = []
+     d3.json("https://guidoism.github.io/jonesforth/experiments/forth_words.json", data => {
+	 console.log("success");
+     })
 
      let stack = []
      let program = [
@@ -353,10 +279,11 @@
 	     rows[2][1] = []
 	     update()
 	 } else if (c == 'a') {
-	     for (d of data) {
-		 d['js'] = compile_description(d['description'])
-	     }
-	     tabulate(data, ['name', 'description', 'js'])
+	     //let data = []
+	     //for (d of forth_words) {
+	//	 d['js'] = compile_description(d['description'])
+	  //   }
+	    // tabulate(data, ['name', 'description', 'js'])
 	 } else if (c == 'q') {
 	     tabulate(forth_memory, ['address', 'char', 'hex'])
 	 } else if (c == 'w') {
