@@ -28,12 +28,6 @@
      keys = ['> ']
      update_terminal()
 
-     let rows = [
-	 ["#row-1", ['Membership', 'Price', '', '', '', '']],
-	 ["#row-2", ['Kentucky Science Center - Family Plus', '$121.90', '', '', '', '']],
-	 ["#row-3", ['Kentucky Science Center - Family', '$94.34', '', '', '', '']],
-     ]
-
      let hex = s => s.charCodeAt(0).toString(16)
      let forth_memory = [
 	 {address: '0', char: 'D', 'hex': hex('D')},
@@ -51,10 +45,11 @@
      ]
 
      let riscv_opcodes = []
-     d3.json("https://guidoism.github.io/jonesforth/experiments/riscv_opcodes.json", data => {
-	 console.log("success");
+     d3.json("https://guidoism.github.io/jonesforth/experiments/riscv_opcodes.json").then(function(d) {
+	 riscv_opcodes = d
+	 update()
      })
-
+     
      let reg_translate = {
 	 bimm12hi: "imm",
 	 bimm12lo: "imm",
@@ -251,9 +246,9 @@
 	 } else if (c == 'a') {
 	     //let data = []
 	     //for (d of forth_words) {
-	//	 d['js'] = compile_description(d['description'])
-	  //   }
-	    // tabulate(data, ['name', 'description', 'js'])
+	     //	 d['js'] = compile_description(d['description'])
+	     //   }
+	     // tabulate(data, ['name', 'description', 'js'])
 	 } else if (c == 'q') {
 	     tabulate(forth_memory, ['address', 'char', 'hex'])
 	 } else if (c == 'w') {
