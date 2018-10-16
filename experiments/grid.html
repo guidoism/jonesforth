@@ -80,10 +80,10 @@
 	 {address: '5', word: '-', literal: ''},
      ]
 
-     let riscv_opcodes = $.ajax({dataType: "json", url: "https://guidoism.github.io/jonesforth/experiments/riscv_opcodes.json", success: function() {
+     let riscv_opcodes = []
+     d3.json("https://guidoism.github.io/jonesforth/experiments/riscv_opcodes.json", data => {
 	 console.log("success");
-	 update()
-     }})
+     })
 
      let reg_translate = {
 	 bimm12hi: "imm",
