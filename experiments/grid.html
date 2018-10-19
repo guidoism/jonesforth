@@ -9,6 +9,7 @@
     </head>
 
     <body>
+	<!-- <canvas id="canvas" width="600" height="100">  -->
 	<table id="grid">
 	</table>
 	<p id="terminal">
@@ -17,6 +18,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
+    <script src="hidpi-canvas.min.js"></script>
     <script>
 
      var keys = []
@@ -28,6 +30,218 @@
      keys = ['> ']
      update_terminal()
 
+     let mp_example = `beginfig(103)
+  pair A,AA,B,BB,C,CC,O,H;
+  A=(0,0); B=(3cm,0); C=(1cm,2cm);
+  AA = 1/2[B,C];
+  BB = 1/2[A,C];
+  CC = 1/2[A,B];
+  O - 1/2[BB,CC] = whatever * (BB-CC) rotated 90;
+  O - 1/2[AA,BB] = whatever * (AA-BB) rotated 90;
+  draw A--B--C--cycle;
+  draw AA withpen pencircle scaled 4bp;
+  draw BB withpen pencircle scaled 4bp;
+  draw CC withpen pencircle scaled 4bp;
+  draw fullcircle scaled 2abs(O-AA) shifted O;
+  % Il faut aussi tracer les hauteurs
+  pair AA,BB,CC;
+  AA - A = whatever * (B-C) rotated 90;
+  AA = whatever [B,C];
+  BB - B = whatever * (A-C) rotated 90;
+  BB = whatever [A,C];
+  CC - C = whatever * (A-B) rotated 90;
+  CC = whatever [A,B];
+  draw A--AA; draw B--BB; draw C--CC;
+  draw AA withpen pencircle scaled 4bp;
+  draw BB withpen pencircle scaled 4bp;
+  draw CC withpen pencircle scaled 4bp;
+  % Il passe aussi par le milieu de HA, HB, HC
+  H = whatever [A,AA];
+  H = whatever [B,BB];
+  draw 1/2 [A,H] withpen pencircle scaled 4bp;
+  draw 1/2 [B,H] withpen pencircle scaled 4bp;
+  draw 1/2 [C,H] withpen pencircle scaled 4bp;
+endfig;`
+     
+     let example = `1 1 0 setrgbcolor
+     newpath -0 28.34645 moveto
+     0.951919 28.34645 1.901216 28.443312 2.834645 28.629915 curveto
+     3.804046 28.823709 4.75143 29.113255 5.66929 29.480308 curveto
+     6.651776 29.873206 7.596623 30.353293 8.503935 30.89763 curveto
+     9.494113 31.491683 10.436944 32.160581 11.33858 32.881882 curveto
+     12.33201 33.676618 13.27368 34.533498 14.173225 35.433062 curveto
+     15.166988 36.426846 16.108187 37.47152 17.00787 38.551172 curveto
+     18.000313 39.742138 18.941468 40.97471 19.842515 42.23621 curveto
+     20.832824 43.622682 21.77416 45.043343 22.67716 46.488178 curveto
+     23.665015 48.068785 24.606626 49.677725 25.511805 51.307074 curveto
+     26.497158 53.080739 27.439081 54.878113 28.34645 56.6929 curveto
+     28.34645 56.6929 lineto
+     27.394531 56.6929 26.445234 56.596038 25.511805 56.409436 curveto
+     24.542404 56.215641 23.59502 55.926095 22.67716 55.559042 curveto
+     21.694674 55.166144 20.749827 54.686057 19.842515 54.14172 curveto
+     18.852337 53.547667 17.909506 52.878769 17.00787 52.157468 curveto
+     16.01444 51.362732 15.07277 50.505852 14.173225 49.606288 curveto
+     13.179462 48.612504 12.238263 47.56783 11.33858 46.488178 curveto
+     10.346137 45.297212 9.404982 44.06464 8.503935 42.80314 curveto
+     7.513626 41.416668 6.57229 39.996007 5.66929 38.551172 curveto
+     4.681435 36.970566 3.739822 35.361626 2.834645 33.732276 curveto
+     1.849295 31.95861 0.907379 30.161231 -0 28.34645 curveto
+     closepath fill
+     0 0 0 setrgbcolor 0 1 dtransform truncate idtransform setlinewidth pop
+     [] 0 setdash 1 setlinecap 1 setlinejoin 10 setmiterlimit
+     newpath -28.34645 56.6929 moveto
+		     -27.443393 54.875921 -26.498256 53.080162 -25.511805 51.307075 curveto
+		     -24.605635 49.678288 -23.664764 48.068933 -22.67716 46.488178 curveto
+		     -21.774385 45.043199 -20.832881 43.622644 -19.842515 42.236211 curveto
+		     -18.941418 40.974747 -18.0003 39.742148 -17.00787 38.551172 curveto
+		     -16.108197 37.471511 -15.16699 36.426844 -14.173225 35.433062 curveto
+		     -13.273678 34.533501 -12.33201 33.676619 -11.33858 32.881882 curveto
+		     -10.436945 32.16058 -9.494113 31.491683 -8.503935 30.897631 curveto
+		     -7.596622 30.353293 -6.651776 29.873206 -5.66929 29.480308 curveto
+		     -4.75143 29.113254 -3.804046 28.823709 -2.834645 28.629915 curveto
+		     -1.901216 28.443312 -0.951919 28.34645 -0 28.34645 curveto
+     0.951919 28.34645 1.901216 28.443312 2.834645 28.629915 curveto
+     3.804046 28.823709 4.75143 29.113255 5.66929 29.480308 curveto
+     6.651776 29.873206 7.596623 30.353293 8.503935 30.89763 curveto
+     9.494113 31.491683 10.436944 32.160581 11.33858 32.881882 curveto
+     12.33201 33.676618 13.27368 34.533498 14.173225 35.433062 curveto
+     15.166988 36.426846 16.108187 37.47152 17.00787 38.551172 curveto
+     18.000313 39.742138 18.941468 40.97471 19.842515 42.23621 curveto
+     20.832824 43.622682 21.77416 45.043343 22.67716 46.488178 curveto
+     23.665015 48.068785 24.606626 49.677725 25.511805 51.307074 curveto
+     26.497158 53.080739 27.439081 54.878113 28.34645 56.6929 curveto
+     29.329373 58.658799 30.27156 60.644751 31.181095 62.645654 curveto
+     32.161798 64.803123 33.104402 66.977671 34.01574 69.165338 curveto
+     34.99414 71.513988 35.936396 73.877498 36.850385 76.251951 curveto
+     37.827728 78.790991 38.772686 81.342378 39.68503 83.905492 curveto stroke
+     newpath -14.173225 -7.086613 moveto
+		     -13.259038 -4.335967 -12.314097 -1.595639 -11.33858 1.133858 curveto
+		     -10.422952 3.695784 -9.48043 6.248045 -8.503935 8.787399 curveto
+		     -7.590734 11.16216 -6.647893 13.525443 -5.66929 15.874012 curveto
+		     -4.757765 18.0616 -3.8153 20.236206 -2.834645 22.393695 curveto
+		     -1.925155 24.394619 -0.982934 26.380556 -0 28.34645 curveto
+     0.907379 30.161231 1.849295 31.95861 2.834645 33.732276 curveto
+     3.739822 35.361626 4.681435 36.970566 5.66929 38.551172 curveto
+     6.57229 39.996007 7.513626 41.416668 8.503935 42.80314 curveto
+     9.404982 44.06464 10.346137 45.297212 11.33858 46.488178 curveto
+     12.238263 47.56783 13.179462 48.612504 14.173225 49.606288 curveto
+     15.07277 50.505852 16.01444 51.362732 17.00787 52.157468 curveto
+     17.909506 52.878769 18.852337 53.547667 19.842515 54.14172 curveto
+     20.749827 54.686057 21.694674 55.166144 22.67716 55.559042 curveto
+     23.59502 55.926095 24.542404 56.215641 25.511805 56.409436 curveto
+     26.445234 56.596038 27.394531 56.6929 28.34645 56.6929 curveto
+     29.298369 56.6929 30.247666 56.596039 31.181095 56.409436 curveto
+     32.150496 56.215641 33.09788 55.926095 34.01574 55.559042 curveto
+     34.998226 55.166145 35.943073 54.686058 36.850385 54.14172 curveto
+     37.840562 53.547666 38.783392 52.878766 39.68503 52.157468 curveto
+     40.678463 51.362735 41.620141 50.505863 42.519675 49.606287 curveto
+     43.513425 48.612492 44.454583 47.567784 45.35432 46.488178 curveto
+     46.346824 45.297259 47.288163 44.06482 48.188965 42.803139 curveto
+     49.178997 41.416483 50.119509 39.995302 51.02361 38.551172 curveto
+     52.012698 36.97129 52.957941 35.364378 53.858255 33.732275 curveto stroke
+     0 0.5 dtransform truncate idtransform setlinewidth pop
+     newpath -28.34645 0 moveto
+     56.6929 0 lineto stroke
+     0.5 0 dtransform exch truncate exch idtransform pop setlinewidth
+     newpath 0 -7.086613 moveto
+     0 92.125962 lineto stroke`
+     example = `%%HiResBoundingBox: -26.975289 -21.116137 26.975289 28.59645 
+     0 0 0 setrgbcolor 0 0.5 dtransform truncate idtransform setlinewidth pop
+     [] 0 setdash 1 setlinecap 1 setlinejoin 10 setmiterlimit
+     newpath 0 28.34645 moveto
+     12.123181 28.34645 14.143425 18.624895 11.049978 7.823411 curveto stroke
+     newpath 9.875086 4.296928 moveto
+     3.284857 -13.10912 -14.899139 -30.886834 -24.548746 -14.173225 curveto stroke
+     newpath -24.548746 -14.173225 moveto
+		     -30.610336 -3.674242 -23.201344 2.936118 -12.300262 5.657856 curveto stroke
+     newpath -8.658792 6.403611 moveto
+     9.710402 9.39933 34.198353 2.540384 24.548746 -14.173225 curveto stroke
+     newpath 24.548746 -14.173225 moveto
+     18.487155 -24.672208 9.057919 -21.561012 1.250284 -13.481267 curveto stroke
+     newpath -1.216294 -10.700539 moveto
+		     -12.995259 3.70979 -19.299214 28.34645 0 28.34645 curveto stroke`
+     
+     function canvas_example(ps) {
+	 let canvas = document.getElementById('canvas')
+	 let ctx = canvas.getContext('2d')
+
+	 r = /%%HiResBoundingBox: ([\d\.-]+) ([\d\.-]+) ([\d\.-]+) ([\d\.-]+)/
+	 if (r.test(ps)) {
+	     ps = ps.replace(r, '').trim()
+	     console.log(RegExp.$1, RegExp.$2, RegExp.$3, RegExp.$4)
+	 }
+	 ps = ps.replace(/%[^\n]+\n/g, '').trim()
+	 ps = ps.replace(/%%EOF/g, '').trim()
+	 // -26.975289 26.975289
+	 // -21.116137  28.59645
+	 // ctx.translate(269.6, 286)
+	 
+	 ctx.translate(150, 286)
+	 ctx.scale(5, -5)
+
+	 // This is Hobby's fancy way of doing setlinewidth at integer pixels:
+	 //   x 0 dtransform exch truncate exch idtransform pop setlinewidth
+	 //   0 y dtransform truncate idtransform setlinewidth pop
+	 ps = ps.replace(/([\d\.-]+) 0 dtransform exch truncate exch idtransform pop setlinewidth/g, '$1 setlinewidth')
+	 ps = ps.replace(/0 ([\d\.-]+) dtransform truncate idtransform setlinewidth pop/g, '$1 setlinewidth')
+	 console.log(ps)
+	 
+	 ctx.setlinecap = i => ["butt", "round", "square"][i]
+	 ctx.setlinejoin = i => ["miter", "round", "bevel"][i]
+	 let rgb = (r, g, b) => `rgb(${r*256},${g*256},${b*256})`
+	 ctx.setrgbcolor = (r, g, b) => {ctx.fillStyle = rgb(r,g,b); ctx.strokeStyle = rgb(r,g,b)}
+	 ctx.setdash = (a, o) => {ctx.setLineDash(a); ctx.lineDashOffset = o}
+	 // I think the rlineto is used as a trick in metapost to create a dot but it doesn't seem to work here
+	 //ctx.rlineto = (dx, dy) => ctx.lineTo(ctx.x_+dx, ctx.y_+dy)
+	 ctx.rlineto = (dx, dy) => ctx.lineTo(ctx.x_+4, ctx.y_+4)
+	 ctx.showpage = () => 1
+	 let functions = {
+	     curveto: 'bezierCurveTo:6',
+	     moveto: 'moveTo:2',
+	     newpath: 'beginPath:0',
+	     stroke: 'stroke:0',
+	     lineto: 'lineTo:2',
+	     rlineto: 'rlineto:2',
+	     closepath: 'closePath:0',
+	     fill: 'fill:0',
+	     setrgbcolor: 'setrgbcolor:3',
+	     setlinewidth: '@lineWidth:1',
+	     setdash: 'setdash:2',
+	     setlinecap: 'setlinecap:1',
+	     setlinejoin: 'setlinejoin:1',
+	     setmiterlimit: '@miterLimit:1',
+	     showpage: 'showpage:0',
+	 }
+	 let track = new Set(['curveto', 'moveto', 'lineto'])
+	 let stack = []
+
+	 // Note: This is absolutely completely not able to parse most Postscript, for that we
+	 // use Ohm, but it is good enough to parse the output of Metapost.
+	 ps.split(/\s+/).map(s => {
+	     if (s == '[]') { stack.push([]); return }
+	     if (!Number.isNaN(Number.parseFloat(s))) { stack.push(Number.parseFloat(s)); return }
+	     let fn = functions[s] || "unknown:0"
+	     let [f, n] = fn.split(':')
+	     if (fn == 'unknown:0') console.log(`Unknown: ${s}`)
+	     let args = stack.splice(-n, n)
+	     if (fn[0] == '@') {
+		 console.log(`ctx.${f.slice(1)} = ${args[0]}`)
+		 eval(`ctx.${f.slice(1)} = ${args[0]}`)
+	     }
+	     else {
+		 eval(`ctx.${f}(...args)`)
+		 console.log(f)
+		 if (track.has(s)) {
+		     x_ = args[0]
+		     y_ = args[1]
+		     console.log(x_, y_)
+		 }
+	     }
+	 })
+     }
+
+
+     
      let hex = s => s.charCodeAt(0).toString(16)
      let forth_memory = [
 	 {address: '0', char: 'D', 'hex': hex('D')},
@@ -47,7 +261,7 @@
      let riscv_opcodes = []
      d3.json("https://guidoism.github.io/jonesforth/experiments/riscv_opcodes.json").then(function(d) {
 	 riscv_opcodes = d
-	 update()
+	 //update()
      })
      
      let reg_translate = {
@@ -133,8 +347,10 @@
      }
      
      let forth_words = []
-     d3.json("https://guidoism.github.io/jonesforth/experiments/forth_words.json", data => {
-	 console.log("success");
+     d3.json("https://guidoism.github.io/jonesforth/experiments/forth_words.json").then(function(d) {
+	 forth_words = d
+	 let inst = forth_words.map(s => named(s, ['word', 'description']))
+	 tabulate(inst, ['word', 'description'])
      })
 
      let stack = []
@@ -206,7 +422,6 @@
      
      function update() {
 	 tabulate(riscv_opcodes.map(s => ({word: s})), ['word'])
-	 //tabulate(data, ['name', 'description'])
 	 
 	 $("tr td").click(function(e) {
 	     $("tr td").removeClass("highlighted")
@@ -218,11 +433,13 @@
      $("body").keypress(function(event) {
 	 let c = String.fromCharCode(event.which)
 	 if (event.key == 'Enter') {
-	     console.log(keys)
+	     let command = keys.slice(1).join('')
+	     keys = '> '
 	 }
 	 else if (event.which == 8) keys.pop()
 	 else keys.push(c)
 	 update_terminal()
+	 
 	 if (c == 'f') {
 	     for (let row of rows) {
 		 let [id, d] = row
@@ -243,12 +460,38 @@
 	     rows[1][1] = s
 	     rows[2][1] = []
 	     update()
+	 } else if (c == 'c') {
+
+	     $.ajax({
+		 url: "http://localhost:5000/",
+		 data: mp_example,
+		 contentType: 'text/plain',
+		 method: 'POST',
+		 dataType: "json",
+	     }).done(function(data) {
+		 let ps = data['postscript']
+		 canvas_example(ps)
+	     });
+
+	     
+	     // create canvas next to table, and display stack and previous
+	     // commands and allow us to step through program
+	     //canvas_example(example)
+	     // use fixed point integers
+
+	     // put program into terminal and see results
+
+	     // create metapost service until i can figure out to create js library
+
+
+	     
 	 } else if (c == 'a') {
-	     //let data = []
-	     //for (d of forth_words) {
-	     //	 d['js'] = compile_description(d['description'])
-	     //   }
-	     // tabulate(data, ['name', 'description', 'js'])
+	     for (d of forth_words) {
+	     	 d[2] = compile_description(d[1])
+		 console.log(d)
+	     }
+	     let inst = forth_words.map(s => named(s, ['word', 'description', 'js']))
+	     tabulate(inst, ['word', 'description', 'js'])
 	 } else if (c == 'q') {
 	     tabulate(forth_memory, ['address', 'char', 'hex'])
 	 } else if (c == 'w') {
