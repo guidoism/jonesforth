@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+	<canvas id="canvas" width="600" height="480"></canvas>
+	<img src="apl_0.png">
+    </body>
+    <script src="hidpi-canvas.min.js"></script>
+    <script>
+     function run() {
+	 let canvas = document.getElementById('canvas')
+	 let ctx = canvas.getContext('2d')
+	 ctx.fillStyle = "black"
+	 ctx.fillRect(0, 0, canvas.width, canvas.height)
+     }
+     run()
+    </script>
+</html>
