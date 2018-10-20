@@ -6,16 +6,56 @@
     </head>
     <body>
 	<canvas id="canvas" width="600" height="480"></canvas>
-	<img src="apl_0.png">
     </body>
     <script src="hidpi-canvas.min.js"></script>
     <script>
-     function run() {
-	 let canvas = document.getElementById('canvas')
-	 let ctx = canvas.getContext('2d')
+     let canvas = document.getElementById('canvas')
+     let ctx = canvas.getContext('2d')
+     let meta = {}
+
+     function black() {
 	 ctx.fillStyle = "black"
 	 ctx.fillRect(0, 0, canvas.width, canvas.height)
      }
-     run()
+     function draw_glyphs(img) {
+     	 x = 0
+	 y = 0
+	 meta.chars.map(s => {
+	     ctx.drawImage(img[s.page], s.x, s.y, s.width, s.height, x+s.xoffset, y+s.yoffset, s.width, s.height)
+	     x += s.xadvance
+	     if (x >= 640) {
+		 x = 0
+		 y += meta.info.size
+	     }
+	 })
+     }
+     function fetchfont() {
+	 let loaded = () => {
+	     console.log('done')
+	 }
+	 let fetch_image = u => {
+	     return new Promise((resolve, reject) => {
+		 let im = new Image()
+		 im.onload = () => resolve(im)
+		 im.onerror = reject
+		 im.src = u
+		 return im
+	     })
+	 }
+	 
+	 let url = 'https://guidoism.github.io/jonesforth/experiments/apl.fnt'
+	 fetch(url)
+	     .then(r => r.json())
+	     .then(r => {
+		 meta = r
+		 Promise.all(r.pages.map(i => fetch_image(i))).then(img => draw_glyphs(img))
+	     })
+     }
+     function greenify() {
+	 //let data = ctx.getImageData(x+s.xoffset, y+s.yoffset, s.width, s.height)
+	 console.log(meta)
+     }
+     
+     fetchfont()
     </script>
 </html>
