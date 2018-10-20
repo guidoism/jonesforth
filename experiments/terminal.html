@@ -38,22 +38,51 @@
 		 let im = new Image()
 		 im.onload = () => resolve(im)
 		 im.onerror = reject
+		 im.crossOrigin = "Anonymous"
 		 im.src = u
 		 return im
 	     })
 	 }
-	 
-	 let url = 'https://guidoism.github.io/jonesforth/experiments/apl.fnt'
+
+	 let base = 'https://guidoism.github.io/jonesforth/experiments/'
+	 let url = base+'apl.fnt'
 	 fetch(url)
 	     .then(r => r.json())
 	     .then(r => {
 		 meta = r
-		 Promise.all(r.pages.map(i => fetch_image(i))).then(img => draw_glyphs(img))
+		 Promise.all(r.pages.map(i => fetch_image(base+i))).then(img => draw_glyphs(img))
+			.then(() => greenify())
 	     })
      }
+     
      function greenify() {
-	 //let data = ctx.getImageData(x+s.xoffset, y+s.yoffset, s.width, s.height)
-	 console.log(meta)
+     	 let [x, y] = [0, 0]
+	 meta.chars.map(s => {
+	     if (s.width > 0) {
+		 //let imageData = ctx.getImageData(x+s.xoffset, y+s.yoffset, s.xadvance, s.height)
+		 let imageData = ctx.getImageData(x, y, s.xadvance, meta.info.size)
+		 let data = imageData.data
+
+		 //const chunk = (r,j) => r.reduce((a,b,i,g) => !(i % j) ? a.concat([g.slice(i,i+j)]) : a, []);
+		 //chunk(data, 4).map(line => console.log(line.map(c => c.toString()).join(',')))
+		 //chunk(data, 4).map(p => p.3)
+
+		 for (var i = 0; i < data.length; i += 4) {
+		     data[i]     = 0
+		     data[i + 1] = data[i + 3]
+		     data[i + 2] = 0
+		     data[i + 3] = 255
+		 }
+
+		 ctx.putImageData(imageData, x, y)
+
+	     }
+	     x += s.xadvance
+	     if (x >= 640) {
+		 x = 0
+		 y += meta.info.size
+	     }
+	 })
      }
      
      fetchfont()
