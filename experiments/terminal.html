@@ -5,13 +5,15 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
-	<canvas id="canvas" width="600" height="480"></canvas>
+ 	<canvas id="canvas" width="600" height="480"></canvas>
     </body>
     <script src="hidpi-canvas.min.js"></script>
     <script>
      let canvas = document.getElementById('canvas')
      let ctx = canvas.getContext('2d')
      let meta = {}
+
+     var wait = ms => new Promise((r, j)=>setTimeout(r, ms))
 
      function black() {
 	 ctx.fillStyle = "black"
@@ -23,9 +25,9 @@
 	 meta.chars.map(s => {
 	     ctx.drawImage(img[s.page], s.x, s.y, s.width, s.height, x+s.xoffset, y+s.yoffset, s.width, s.height)
 	     x += s.xadvance
-	     if (x >= 640) {
+	     if (x >= 1000) {
 		 x = 0
-		 y += meta.info.size
+		 y += (meta.info.size + 20)
 	     }
 	 })
      }
@@ -52,37 +54,65 @@
 		 meta = r
 		 Promise.all(r.pages.map(i => fetch_image(base+i))).then(img => draw_glyphs(img))
 			.then(() => greenify())
+			.then(() => terminal())
 	     })
      }
-     
+
+     let font = {}
      function greenify() {
      	 let [x, y] = [0, 0]
 	 meta.chars.map(s => {
-	     if (s.width > 0) {
-		 //let imageData = ctx.getImageData(x+s.xoffset, y+s.yoffset, s.xadvance, s.height)
-		 let imageData = ctx.getImageData(x, y, s.xadvance, meta.info.size)
-		 let data = imageData.data
+	     //console.log(s)
+	     //let [dx, dy] = [x+s.xoffset, y+s.yoffset]
+	     //let imageData = ctx.getImageData(dx, dy, s.xadvance, s.height)
+	     //let [width, height] = [s.xadvance, s.yoffset+s.height]
+	     let [width, height] = [s.xadvance, meta.common.lineHeight]
+	     let imageData = ctx.getImageData(x, y, width, height)
+	     let data = imageData.data
 
-		 //const chunk = (r,j) => r.reduce((a,b,i,g) => !(i % j) ? a.concat([g.slice(i,i+j)]) : a, []);
-		 //chunk(data, 4).map(line => console.log(line.map(c => c.toString()).join(',')))
-		 //chunk(data, 4).map(p => p.3)
+	     //const chunk = (r,j) => r.reduce((a,b,i,g) => !(i % j) ? a.concat([g.slice(i,i+j)]) : a, []);
+	     //chunk(data, 4).map(line => console.log(line.map(c => c.toString()).join(',')))
+	     //chunk(data, 4).map(p => p.3)
 
-		 for (var i = 0; i < data.length; i += 4) {
-		     data[i]     = 0
-		     data[i + 1] = data[i + 3]
-		     data[i + 2] = 0
-		     data[i + 3] = 255
-		 }
-
-		 ctx.putImageData(imageData, x, y)
-
+	     for (var i = 0; i < data.length; i += 4) {
+		 data[i]     = 0
+		 data[i + 1] = data[i + 3]
+		 data[i + 2] = 0
+		 data[i + 3] = 255
 	     }
+	     
+	     ctx.putImageData(imageData, x, y)
+	     font[s.id] = {
+		 glyph: imageData,
+		 meta: s,
+	     }
+
 	     x += s.xadvance
-	     if (x >= 640) {
+	     if (x >= 1000) {
 		 x = 0
-		 y += meta.info.size
+		 y += (meta.info.size + 20)
 	     }
 	 })
+	 black()
+     }
+
+     let cursor = {x: 0, y: 0}
+     function write(s) {
+	 let f = font[s.codePointAt(0)]
+	 ctx.putImageData(f.glyph, cursor.x, cursor.y)
+	 cursor.x += f.meta.xadvance
+     }
+
+     function backspace() {
+	 // TODO: Create wrapping adder with modulus
+	 cursor.x -= f.meta.xadvance
+	 ctx.fillRect(cursor.x, cursor.y, meta.xadvance, meta.common.lineHeight
+     }
+     
+     
+     function terminal() {
+	 document.addEventListener('keypress', e => write(e.key))
+	 document.addEventListener('keyup', e => {if (e.keyCode == 8) backspace()})
      }
      
      fetchfont()
