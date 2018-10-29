@@ -63,17 +63,8 @@
      function greenify() {
      	 let [x, y] = [0, 0]
 	 meta.chars.map(s => {
-	     //console.log(s)
-	     //let [dx, dy] = [x+s.xoffset, y+s.yoffset]
-	     //let imageData = ctx.getImageData(dx, dy, s.xadvance, s.height)
-	     //let [width, height] = [s.xadvance, s.yoffset+s.height]
 	     let [width, height] = [s.xadvance, meta.common.lineHeight]
 	     let imageData = ctx.getImageData(x, y, width, height)
-	     let data = imageData.data
-
-	     //
-	     //chunk(data, 4).map(line => console.log(line.map(c => c.toString()).join(',')))
-	     //chunk(data, 4).map(p => p.3)
 
 	     for (var i = 0; i < data.length; i += 4) {
 		 data[i]     = 0
