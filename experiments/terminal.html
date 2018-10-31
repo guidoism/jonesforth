@@ -12,26 +12,36 @@
      let canvas = document.getElementById('canvas')
      let ctx = canvas.getContext('2d')
      let meta = {}
+     let font = {}
 
      const wait = ms => new Promise((r, j)=>setTimeout(r, ms))
      const chunk = (r,j) => r.reduce((a,b,i,g) => !(i % j) ? a.concat([g.slice(i,i+j)]) : a, []);
+     const index_to_coordinates = i => [i & 127, i >> 7]
 
-     function black() {
-	 ctx.fillStyle = "black"
-	 ctx.fillRect(0, 0, canvas.width, canvas.height)
-     }
-     function draw_glyphs(img) {
-     	 let x = 0
-	 let y = 0
-	 meta.chars.map(s => {
-	     ctx.drawImage(img[s.page], s.x, s.y, s.width, s.height, x+s.xoffset, y+s.yoffset, s.width, s.height)
-	     x += s.xadvance
-	     if (x >= 1000) {
-		 x = 0
-		 y += (meta.info.size + 20)
+     function greenify(img) {
+	 let [w, h] = [Math.max(...meta.chars.map(c => c.xadvance)), meta.common.lineHeight]
+	 
+	 meta.chars.map((s, i) => {
+	     ctx.clearRect(0, 0, w, h)
+	     ctx.drawImage(img[s.page], s.x, s.y, s.width, s.height, s.xoffset, s.yoffset, s.width, s.height)
+	     let imageData = ctx.getImageData(0, 0, w, h)
+	     let data = imageData.data
+	     for (var i = 0; i < data.length; i += 4) {
+		 data[i]     = 0
+		 data[i + 1] = data[i + 3]
+		 data[i + 2] = 0
+		 data[i + 3] = 255
+	     }
+	     
+	     font[s.id] = {
+		 glyph: imageData,
+		 meta: s,
 	     }
 	 })
+
+	 black()
      }
+
      function fetchfont() {
 	 let loaded = () => {
 	     console.log('done')
@@ -53,40 +63,13 @@
 	     .then(r => r.json())
 	     .then(r => {
 		 meta = r
-		 Promise.all(r.pages.map(i => fetch_image(base+i))).then(img => draw_glyphs(img))
-			.then(() => greenify())
-			.then(() => terminal())
+		 Promise.all(r.pages.map(i => fetch_image(base+i))).then(img => greenify(img)).then(() => terminal())
 	     })
      }
 
-     let font = {}
-     function greenify() {
-     	 let [x, y] = [0, 0]
-	 meta.chars.map(s => {
-	     let [width, height] = [s.xadvance, meta.common.lineHeight]
-	     let imageData = ctx.getImageData(x, y, width, height)
-	     let data = imageData.data
-
-	     for (var i = 0; i < data.length; i += 4) {
-		 data[i]     = 0
-		 data[i + 1] = data[i + 3]
-		 data[i + 2] = 0
-		 data[i + 3] = 255
-	     }
-	     
-	     ctx.putImageData(imageData, x, y)
-	     font[s.id] = {
-		 glyph: imageData,
-		 meta: s,
-	     }
-
-	     x += s.xadvance
-	     if (x >= 1000) {
-		 x = 0
-		 y += (meta.info.size + 20)
-	     }
-	 })
-	 black()
+     function black() {
+	 ctx.fillStyle = "black"
+	 ctx.fillRect(0, 0, canvas.width, canvas.height)
      }
 
      function hex(buffer) {
