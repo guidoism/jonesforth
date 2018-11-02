@@ -18,25 +18,31 @@
      const chunk = (r,j) => r.reduce((a,b,i,g) => !(i % j) ? a.concat([g.slice(i,i+j)]) : a, []);
      const index_to_coordinates = i => [i & 127, i >> 7]
 
+     // Prints to string so we can debug on the console
+     function print_char(c, w) {
+	 let bw = chunk(c, 4).map(a => {
+	     if (a[0] > 0) return 'r'
+	     else if (a[1] > 0) return 'g'
+	     else if (a[2] > 0) return 'b'
+	     else if (a[3] > 0) return 'a'
+	 })
+	 return chunk(bw, w).map(a => a.map(j => j || '█').join('')).join('\n')
+     }
+
      function greenify(img) {
 	 let [w, h] = [Math.max(...meta.chars.map(c => c.xadvance)), meta.common.lineHeight]
 	 
 	 meta.chars.map((s, i) => {
 	     ctx.clearRect(0, 0, w, h)
 	     ctx.drawImage(img[s.page], s.x, s.y, s.width, s.height, s.xoffset, s.yoffset, s.width, s.height)
-	     let imageData = ctx.getImageData(0, 0, w, h)
-	     let data = imageData.data
-	     for (var i = 0; i < data.length; i += 4) {
-		 data[i]     = 0
-		 data[i + 1] = data[i + 3]
-		 data[i + 2] = 0
-		 data[i + 3] = 255
-	     }
-	     
-	     font[s.id] = {
-		 glyph: imageData,
-		 meta: s,
-	     }
+	     let d = ctx.getImageData(0, 0, w, h)
+	     var buf = new ArrayBuffer(d.data.length);
+	     let datafrom = new Uint32Array(d.data.buffer)
+	     var buf8 = new Uint8ClampedArray(buf);
+	     var data = new Uint32Array(buf);
+	     datafrom.map((u, i) => data[i] = u >> 16 | 0xFF000000)
+	     d.data.set(buf8);
+	     font[s.id] = { glyph: d, meta: s }
 	 })
 
 	 black()
