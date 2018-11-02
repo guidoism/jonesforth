@@ -112,9 +112,9 @@
      }
 
      function backspace() {
-	 // TODO: Create wrapping adder with modulus
-	 cursor.x -= 1
-	 // todo set ram to zero
+ 	 cursor.x -= 1
+	 let offset = ((cursor.y << 7) + cursor.x) << 2
+	 screen_view_mut.setUint32(offset, 32, true)
 	 update_screen()
      }
      
