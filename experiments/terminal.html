@@ -100,20 +100,35 @@
 	 })
      }
 
-     let cursor = {x: 0, y: 0}
+     let cursor = 0
      function write(s) {
-	 let offset = ((cursor.y << 7) + cursor.x) << 2
-	 console.log(`Setting offset ${offset} with codepoint ${s.codePointAt(0)}`)
+	 let offset = cursor << 2
 	 screen_view_mut.setUint32(offset, s.codePointAt(0), true)
 	 console.log(hex(ram.slice(0, offset+4)))
 	 update_screen()
-	 cursor.x = (cursor.x + 1) % 80
-	 if (cursor.x == 0) cursor.y += 1
+	 cursor += 1
      }
 
+     delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+     let last = undefined
+     function blink() {
+	 let [w, h] = [font[32].meta.xadvance, meta.common.lineHeight]
+	 let i = 0 // change
+	 if (last != '█') {
+	     last = '█'
+	     ctx.putImageData(font[last.codePointAt(0)].glyph, (i & 0b1111111)*w, (i >>> 7)*h)
+	 } else {
+	     last = ' '
+	     ctx.putImageData(font[last.codePointAt(0)].glyph, (i & 0b1111111)*w, (i >>> 7)*h)
+	 }
+	 
+	 // Change to 1.87 Hz?
+	 delay(600).then(blink)
+     }
+     
      function backspace() {
- 	 cursor.x -= 1
-	 let offset = ((cursor.y << 7) + cursor.x) << 2
+	 cursor -= 1
+	 let offset = cursor << 2
 	 screen_view_mut.setUint32(offset, 32, true)
 	 update_screen()
      }
@@ -121,6 +136,9 @@
      function terminal() {
 	 document.addEventListener('keypress', e => write(e.key))
 	 document.addEventListener('keyup', e => {if (e.keyCode == 8) backspace()})
+
+	 // Change to 1.87 Hz?
+	 delay(1000).then(blink)
      }
      
      fetchfont()
