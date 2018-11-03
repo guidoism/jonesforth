@@ -10,63 +10,10 @@
     <!-- <script type="module" src="font.mjs"></script>  -->
     <script src="hidpi-canvas.min.js"></script>
     <script type="module">
-     import { delay, chunk, wait } from './font.mjs'
+     import { fetchfont, font, meta, delay, chunk, wait, greenify, index_to_coordinates } from './font.mjs'
      
      let canvas = document.getElementById('canvas')
      let ctx = canvas.getContext('2d')
-     let meta = {}
-     let font = {}
-
-     const index_to_coordinates = i => [i & 127, i >> 7]
-
-     function greenify(img) {
-	 let [w, h] = [Math.max(...meta.chars.map(c => c.xadvance)), meta.common.lineHeight]
-	 
-	 meta.chars.map((s, i) => {
-	     ctx.clearRect(0, 0, w, h)
-	     ctx.drawImage(img[s.page], s.x, s.y, s.width, s.height, s.xoffset, s.yoffset, s.width, s.height)
-	     let d = ctx.getImageData(0, 0, w, h)
-	     var buf = new ArrayBuffer(d.data.length);
-	     let datafrom = new Uint32Array(d.data.buffer)
-	     var buf8 = new Uint8ClampedArray(buf);
-	     var data = new Uint32Array(buf);
-	     datafrom.map((u, i) => data[i] = u >> 16 | 0xFF000000)
-	     d.data.set(buf8);
-	     font[s.id] = { glyph: d, meta: s }
-	 })
-
-	 black()
-     }
-
-     function fetchfont() {
-	 let loaded = () => {
-	     console.log('done')
-	 }
-	 let fetch_image = u => {
-	     return new Promise((resolve, reject) => {
-		 let im = new Image()
-		 im.onload = () => resolve(im)
-		 im.onerror = reject
-		 im.crossOrigin = "Anonymous"
-		 im.src = u
-		 return im
-	     })
-	 }
-
-	 let base = 'https://guidoism.github.io/jonesforth/experiments/'
-	 let url = base+'apl.fnt'
-	 fetch(url)
-	     .then(r => r.json())
-	     .then(r => {
-		 meta = r
-		 Promise.all(r.pages.map(i => fetch_image(base+i))).then(img => greenify(img)).then(() => terminal())
-	     })
-     }
-
-     function black() {
-	 ctx.fillStyle = "black"
-	 ctx.fillRect(0, 0, canvas.width, canvas.height)
-     }
 
      function hex(buffer) {
 	 let array = new Uint8Array(buffer)
@@ -113,11 +60,13 @@
      }
      
      function terminal() {
+	 ctx.fillStyle = "black"
+	 ctx.fillRect(0, 0, canvas.width, canvas.height)
 	 document.addEventListener('keypress', e => write(e.key))
 	 document.addEventListener('keyup', e => {if (e.keyCode == 8) backspace()})
  	 delay(534).then(blink)
      }
      
-     fetchfont()
+     fetchfont(terminal)
     </script>
 </html>
