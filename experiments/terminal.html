@@ -114,23 +114,19 @@
 	 let [w, h] = [font[32].meta.xadvance, meta.common.lineHeight]
 	 last = (last == '█') ? ' ' : '█'
 	 ctx.putImageData(font[last.codePointAt(0)].glyph, (cursor & 0b1111111)*w, (cursor >>> 7)*h)
-	 
-	 // Change to 1.87 Hz?
-	 delay(600).then(blink)
+ 	 delay(534).then(blink)
      }
      
      function backspace() {
 	 cursor -= 1
-	 screen_view_mut.setUint32(offset << 2, 32, true)
+	 screen_view_mut.setUint32(cursor << 2, 32, true)
 	 update_screen()
      }
      
      function terminal() {
 	 document.addEventListener('keypress', e => write(e.key))
 	 document.addEventListener('keyup', e => {if (e.keyCode == 8) backspace()})
-
-	 // Change to 1.87 Hz?
-	 delay(1000).then(blink)
+ 	 delay(534).then(blink)
      }
      
      fetchfont()
