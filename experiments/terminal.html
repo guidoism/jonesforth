@@ -102,9 +102,8 @@
 
      let cursor = 0
      function write(s) {
-	 let offset = cursor << 2
-	 screen_view_mut.setUint32(offset, s.codePointAt(0), true)
-	 console.log(hex(ram.slice(0, offset+4)))
+	 screen_view_mut.setUint32(cursor << 2, s.codePointAt(0), true)
+	 //console.log(hex(ram.slice(0, offset+4)))
 	 update_screen()
 	 cursor += 1
      }
@@ -128,8 +127,7 @@
      
      function backspace() {
 	 cursor -= 1
-	 let offset = cursor << 2
-	 screen_view_mut.setUint32(offset, 32, true)
+	 screen_view_mut.setUint32(offset << 2, 32, true)
 	 update_screen()
      }
      
