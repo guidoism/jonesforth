@@ -112,14 +112,8 @@
      let last = undefined
      function blink() {
 	 let [w, h] = [font[32].meta.xadvance, meta.common.lineHeight]
-	 let i = 0 // change
-	 if (last != '█') {
-	     last = '█'
-	     ctx.putImageData(font[last.codePointAt(0)].glyph, (i & 0b1111111)*w, (i >>> 7)*h)
-	 } else {
-	     last = ' '
-	     ctx.putImageData(font[last.codePointAt(0)].glyph, (i & 0b1111111)*w, (i >>> 7)*h)
-	 }
+	 last = (last == '█') ? ' ' : '█'
+	 ctx.putImageData(font[last.codePointAt(0)].glyph, (cursor & 0b1111111)*w, (cursor >>> 7)*h)
 	 
 	 // Change to 1.87 Hz?
 	 delay(600).then(blink)
