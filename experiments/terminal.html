@@ -62,9 +62,32 @@
      function terminal() {
 	 ctx.fillStyle = "black"
 	 ctx.fillRect(0, 0, canvas.width, canvas.height)
-	 document.addEventListener('keypress', e => write(e.key))
+	 //document.addEventListener('keypress', e => write(e.key))
+	 document.addEventListener('keypress', keypress)
 	 document.addEventListener('keyup', e => {if (e.keyCode == 8) backspace()})
  	 delay(534).then(blink)
+     }
+
+     var line_buffer = []
+     function keypress(e) {
+	 if (e.isComposing) return
+	 if (e.key == 'Enter') return enter()
+	 line_buffer.push(e.key)
+	 screen_view_mut.setUint32(cursor << 2, e.key.codePointAt(0), true)
+	 cursor += 1
+	 update_screen()
+     }
+
+     function enter() {
+	 let cmd = line_buffer.join(''); line_buffer = []
+	 console.log(`Do something here: ${cmd}`)
+	 console.log(cursor)
+	 console.log(cursor >>> 7)
+	 // todo consider using apl here
+	 // todo use mask instead of two shifts
+	 console.log(((cursor >>> 7) << 7) + 128)
+	 cursor = ((cursor >>> 7) << 7) + 128
+	 update_screen()
      }
      
      fetchfont(terminal)
