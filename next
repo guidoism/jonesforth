@@ -1,0 +1,170 @@
+@ Assembling.
+
+If you want to actually run this Forth, rather than just read it, you
+will need Linux on an i386.  Linux because instead of programming
+directly to the hardware on a bare PC which I could have done, I went
+for a simpler tutorial by assuming that the `hardware' is a Linux
+process with a few basic system calls (read, write and exit and that's
+about all).  i386 is needed because I had to write the assembly for a
+processor, and i386 is by far the most common.  (Of course when I say
+`i386', any 32- or 64-bit x86 processor will do.  I'm compiling this
+on a 64 bit AMD Opteron).
+
+Again, to assemble this you will need gcc and gas (the GNU assembler).
+The commands to assemble and run the code (save this file as
+`jonesforth.S') are:
+
+        gcc -m32 -nostdlib -static -Wl,-Ttext,0 -Wl,--build-id=none -o jonesforth jonesforth.S
+        cat jonesforth.f - \mid ./jonesforth
+
+If you want to run your own FORTH programs you can do:
+
+	cat jonesforth.f myprog.f \mid ./jonesforth
+
+If you want to load your own FORTH code and then continue reading user commands, you can do:
+
+        cat jonesforth.f myfunctions.f - \mid ./jonesforth
+
+******************************************************************************
+******************************************************************************
+******************************************************************************
+******************************************************************************
+
+@ The Dictionary.
+
+In FORTH as you will know, functions are called "words", and just as in other languages they
+have a name and a definition.  Here are two FORTH words:
+
+        : DOUBLE DUP + ;                \ name is "DOUBLE", definition is "DUP +"
+        : QUADRUPLE DOUBLE DOUBLE ;     \ name is "QUADRUPLE", definition is "DOUBLE DOUBLE"
+
+Words, both built-in ones and ones which the programmer defines later, are stored in a dictionary
+which is just a linked list of dictionary entries.
+
+        <--- DICTIONARY ENTRY (HEADER) ----------------------->
+        +------------------------+--------+---------- - - - - +----------- - - - -
+        | LINK POINTER           | LENGTH/| NAME              | DEFINITION
+        |                        | FLAGS  |                   |
+        +--- (4 bytes) ----------+- byte -+- n bytes  - - - - +----------- - - - -
+
+I'll come to the definition of the word later.  For now just look at the header.  The first
+4 bytes are the link pointer.  This points back to the previous word in the dictionary, or, for
+the first word in the dictionary it is just a NULL pointer.  Then comes a length/flags byte.
+The length of the word can be up to 31 characters (5 bits used) and the top three bits are used
+for various flags which I'll come to later.  This is followed by the name itself, and in this
+implementation the name is rounded up to a multiple of 4 bytes by padding it with zero bytes.
+That's just to ensure that the definition starts on a 32 bit boundary.
+
+A FORTH variable called LATEST contains a pointer to the most recently defined word, in
+other words, the head of this linked list.
+
+DOUBLE and QUADRUPLE might look like this:
+
+          pointer to previous word
+           ^
+           |
+        +--|------+---+---+---+---+---+---+---+---+------------- - - - -
+        | LINK    | 6 | D | O | U | B | L | E | 0 | (definition ...)
+        +---------+---+---+---+---+---+---+---+---+------------- - - - -
+           ^       len                         padding
+           |
+        +--|------+---+---+---+---+---+---+---+---+---+---+---+---+------------- - - - -
+        | LINK    | 9 | Q | U | A | D | R | U | P | L | E | 0 | 0 | (definition ...)
+        +---------+---+---+---+---+---+---+---+---+---+---+---+---+------------- - - - -
+           ^       len                                     padding
+           |
+           |
+          LATEST
+
+You should be able to see from this how you might implement functions to find a word in
+the dictionary (just walk along the dictionary entries starting at LATEST and matching
+the names until you either find a match or hit the NULL pointer at the end of the dictionary);
+and add a word to the dictionary (create a new definition, set its LINK to LATEST, and set
+LATEST to point to the new word).  We'll see precisely these functions implemented in
+assembly code later on.
+
+One interesting consequence of using a linked list is that you can redefine words, and
+a newer definition of a word overrides an older one.  This is an important concept in
+FORTH because it means that any word (even "built-in" or "standard" words) can be
+overridden with a new definition, either to enhance it, to make it faster or even to
+disable it.  However because of the way that FORTH words get compiled, which you'll
+understand below, words defined using the old definition of a word continue to use
+the old definition.  Only words defined after the new definition use the new definition.
+
+@ Direct Threaded Code.
+
+Now we'll get to the really crucial bit in understanding FORTH, so go and get a cup of tea
+or coffee and settle down.  It's fair to say that if you don't understand this section, then you
+won't "get" how FORTH works, and that would be a failure on my part for not explaining it well.
+So if after reading this section a few times you don't understand it, please email me
+(rich\@annexia.org).
+
+Let's talk first about what "threaded code" means.  Imagine a peculiar version of C where
+you are only allowed to call functions without arguments.  (Don't worry for now that such a
+language would be completely useless!)  So in our peculiar C, code would look like this:
+
+        f ()
+        {
+          a ();
+          b ();
+          c ();
+        }
+
+and so on.  How would a function, say 'f' above, be compiled by a standard C compiler?
+Probably into assembly code like this.  On the right hand side I've written the actual
+i386 machine code.
+
+        f:
+          CALL a                        E8 08 00 00 00
+          CALL b                        E8 1C 00 00 00
+          CALL c                        E8 2C 00 00 00
+          ; ignore the return from the function for now
+
+"E8" is the x86 machine code to "CALL" a function.  In the first 20 years of computing
+memory was hideously expensive and we might have worried about the wasted space being used
+by the repeated "E8" bytes.  We can save 20% in code size (and therefore, in expensive memory)
+by compressing this into just:
+
+        08 00 00 00             Just the function addresses, without
+        1C 00 00 00             the CALL prefix.
+        2C 00 00 00
+
+        On a 16-bit machine like the ones which originally ran FORTH the savings are even greater - 33%.
+
+[Historical note: If the execution model that FORTH uses looks strange from the following
+paragraphs, then it was motivated entirely by the need to save memory on early computers.
+This code compression isn't so important now when our machines have more memory in their L1
+caches than those early computers had in total, but the execution model still has some
+useful properties].
+
+Of course this code won't run directly on the CPU any more.  Instead we need to write an
+interpreter which takes each set of bytes and calls it.
+
+On an i386 machine it turns out that we can write this interpreter rather easily, in just
+two assembly instructions which turn into just 3 bytes of machine code.  Let's store the
+pointer to the next word to execute in the %esi register:
+
+                08 00 00 00     <- We're executing this one now.  %esi is the _next_ one to execute.
+        %esi -> 1C 00 00 00
+                2C 00 00 00
+
+The all-important i386 instruction is called LODSL (or in Intel manuals, LODSW).  It does
+two things.  Firstly it reads the memory at %esi into the accumulator (%eax).  Secondly it
+increments %esi by 4 bytes.  So after LODSL, the situation now looks like this:
+
+                08 00 00 00     <- We're still executing this one
+                1C 00 00 00     <- %eax now contains this address (0x0000001C)
+        %esi -> 2C 00 00 00
+
+Now we just need to jump to the address in %eax.  This is again just a single x86 instruction
+written JMP *(%eax).  And after doing the jump, the situation looks like:
+
+                08 00 00 00
+                1C 00 00 00     <- Now we're executing this subroutine.
+        %esi -> 2C 00 00 00
+
+To make this work, each subroutine is followed by the two instructions 'LODSL; JMP *(%eax)'
+which literally make the jump to the next subroutine.
+
+And that brings us to our first piece of actual code!  Well, it's a macro.
+
