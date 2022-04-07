@@ -1029,29 +1029,33 @@ code_\label :                   // assembler code follows
 * Literals
 
         The final point I "glossed over" before was how to deal with functions that do anything
-        apart from calling other functions.  For example, suppose that DOUBLE was defined like this:
+        apart from calling other functions.  For example, suppose that =DOUBLE= was defined like this:
 
+	#+begin_example forth
         : DOUBLE 2 * ;
+	#+end_example
 
         It does the same thing, but how do we compile it since it contains the literal 2?  One way
         would be to have a function called "2" (which you'd have to write in assembler), but you'd need
         a function for every single literal that you wanted to use.
 
-        FORTH solves this by compiling the function using a special word called LIT:
+        FORTH solves this by compiling the function using a special word called =LIT=:
 
+	#+begin_example
         +---------------------------+-------+-------+-------+-------+-------+
         | (usual header of DOUBLE)  | DOCOL | LIT   | 2     | *     | EXIT  |
         +---------------------------+-------+-------+-------+-------+-------+
+	#+end_example
 
-        LIT is executed in the normal way, but what it does next is definitely not normal.  It
-        looks at %esi (which now points to the number 2), grabs it, pushes it on the stack, then
-        manipulates %esi in order to skip the number as if it had never been there.
+        =LIT= is executed in the normal way, but what it does next is definitely not normal.  It
+        looks at =%esi= (which now points to the number 2), grabs it, pushes it on the stack, then
+        manipulates =%esi= in order to skip the number as if it had never been there.
 
         What's neat is that the whole grab/manipulate can be done using a single byte single
-        i386 instruction, our old friend LODSL.  Rather than me drawing more ASCII-art diagrams,
-        see if you can find out how LIT works:
-*/
+        i386 instruction, our old friend =LODSL=.  Rather than me drawing more ASCII-art diagrams,
+        see if you can find out how =LIT= works:
 
+	#+begin_src asm
         defcode "LIT",3,,LIT
         // %esi points to the next command, but in this case it points to the next
         // literal 32 bit integer.  Get that literal into %eax and increment %esi.
@@ -1059,15 +1063,15 @@ code_\label :                   // assembler code follows
         lodsl
         push %eax               // push the literal number on to stack
         NEXT
+	#+end_src
 
-/*
-        MEMORY ----------------------------------------------------------------------
+* Memory
 
         An important point about FORTH is that it gives you direct access to the lowest levels
         of the machine.  Manipulating memory directly is done frequently in FORTH, and these are
         the primitive words for doing it.
-*/
 
+	#+begin_src asm
         defcode "!",1,,STORE
         pop %ebx                // address to store at
         pop %eax                // data to store there
@@ -1091,14 +1095,15 @@ code_\label :                   // assembler code follows
         pop %eax                // the amount to subtract
         subl %eax,(%ebx)        // add it
         NEXT
+	#+end_src
 
-/*
-        ! and @ (STORE and FETCH) store 32-bit words.  It's also useful to be able to read and write bytes
-        so we also define standard words C@ and C!.
+        =!= and =@= (=STORE= and =FETCHk) store 32-bit words.  It's also useful to be able to read and write bytes
+        so we also define standard words =C@= and =C!=.
 
         Byte-oriented operations only work on architectures which permit them (i386 is one of those).
- */
 
+
+	#+begin_src asm
         defcode "C!",2,,STOREBYTE
         pop %ebx                // address to store at
         pop %eax                // data to store there
@@ -1131,22 +1136,24 @@ code_\label :                   // assembler code follows
         rep movsb               // copy source to destination
         mov %edx,%esi           // restore %esi
         NEXT
+	#+end_src
 
-/*
-        BUILT-IN VARIABLES ----------------------------------------------------------------------
+* Built-In Variables
 
         These are some built-in variables and related standard FORTH words.  Of these, the only one that we
-        have discussed so far was LATEST, which points to the last (most recently defined) word in the
-        FORTH dictionary.  LATEST is also a FORTH word which pushes the address of LATEST (the variable)
-        on to the stack, so you can read or write it using @ and ! operators.  For example, to print
-        the current value of LATEST (and this can apply to any FORTH variable) you would do:
+        have discussed so far was =LATEST=, which points to the last (most recently defined) word in the
+        FORTH dictionary.  =LATEST= is also a FORTH word which pushes the address of =LATEST= (the variable)
+        on to the stack, so you can read or write it using =@= and =!= operators.  For example, to print
+        the current value of =LATEST= (and this can apply to any FORTH variable) you would do:
 
+	#+begin_example forth
         LATEST @ . CR
+	#+end_example
 
         To make defining variables shorter, I'm using a macro called defvar, similar to defword and
         defcode above.  (In fact the defvar macro uses defcode to do the dictionary header).
-*/
 
+	#+begin_src asm
         .macro defvar name, namelen, flags=0, label, initial=0
         defcode \name,\namelen,\flags,\label
         push $var_\name
@@ -1156,43 +1163,42 @@ code_\label :                   // assembler code follows
 var_\name :
         .int \initial
         .endm
+	#+end_src
 
-/*
         The built-in variables are:
 
-        STATE           Is the interpreter executing code (0) or compiling a word (non-zero)?
-        LATEST          Points to the latest (most recently defined) word in the dictionary.
-        HERE            Points to the next free byte of memory.  When compiling, compiled words go here.
-        S0              Stores the address of the top of the parameter stack.
-        BASE            The current base for printing and reading numbers.
+        - =STATE=           Is the interpreter executing code (0) or compiling a word (non-zero)?
+        - =LATEST=          Points to the latest (most recently defined) word in the dictionary.
+        - =HERE=            Points to the next free byte of memory.  When compiling, compiled words go here.
+        - =S0=              Stores the address of the top of the parameter stack.
+        - =BASE=            The current base for printing and reading numbers.
 
-*/
+
+	#+begin_src asm
         defvar "STATE",5,,STATE
         defvar "HERE",4,,HERE
         defvar "LATEST",6,,LATEST,name_SYSCALL0 // SYSCALL0 must be last in built-in dictionary
         defvar "S0",2,,SZ
         defvar "BASE",4,,BASE,10
+	#+end_src
 
-/*
-        BUILT-IN CONSTANTS ----------------------------------------------------------------------
+* Built-In Constants
 
         It's also useful to expose a few constants to FORTH.  When the word is executed it pushes a
         constant value on the stack.
 
         The built-in constants are:
 
-        VERSION         Is the current version of this FORTH.
-        R0              The address of the top of the return stack.
-        DOCOL           Pointer to DOCOL.
-        F_IMMED         The IMMEDIATE flag's actual value.
-        F_HIDDEN        The HIDDEN flag's actual value.
-        F_LENMASK       The length mask in the flags/len byte.
+        - =VERSION=         Is the current version of this FORTH.
+        - =R0=              The address of the top of the return stack.
+        - =DOCOL=           Pointer to DOCOL.
+        - =F_IMMED=         The IMMEDIATE flag's actual value.
+        - =F_HIDDEN=        The HIDDEN flag's actual value.
+        - =F_LENMASK=       The length mask in the flags/len byte.
+        - =SYS_*=           and the numeric codes of various Linux syscalls (from <asm/unistd.h>)
 
-        SYS_*           and the numeric codes of various Linux syscalls (from <asm/unistd.h>)
-*/
-
-//#include <asm-i386/unistd.h>  // you might need this instead
-#include <asm/unistd.h>
+#+begin_src asm
+#include <asm-i386/unistd.h>
 
         .macro defconst name, namelen, flags=0, label, value
         defcode \name,\namelen,\flags,\label
@@ -1223,14 +1229,15 @@ var_\name :
         defconst "O_TRUNC",7,,__O_TRUNC,01000
         defconst "O_APPEND",8,,__O_APPEND,02000
         defconst "O_NONBLOCK",10,,__O_NONBLOCK,04000
+#+end_src
 
-/*
-        RETURN STACK ----------------------------------------------------------------------
+* Return Stack
 
         These words allow you to access the return stack.  Recall that the register %ebp always points to
         the top of the return stack.
-*/
 
+
+	#+begin_src asm
         defcode ">R",2,,TOR
         pop %eax                // pop parameter stack into %eax
         PUSHRSP %eax            // push it on to the return stack
@@ -1252,14 +1259,16 @@ var_\name :
         defcode "RDROP",5,,RDROP
         addl $4,%ebp            // pop return stack and throw away
         NEXT
+	#+end_src
 
-/*
-        PARAMETER (DATA) STACK ----------------------------------------------------------------------
+
+* Parameter (Data) Stack
 
         These functions allow you to manipulate the parameter stack.  Recall that Linux sets up the parameter
-        stack for us, and it is accessed through %esp.
-*/
+        stack for us, and it is accessed through =%esp=.
 
+
+	#+begin_src asm
         defcode "DSP@",4,,DSPFETCH
         mov %esp,%eax
         push %eax
@@ -1268,9 +1277,9 @@ var_\name :
         defcode "DSP!",4,,DSPSTORE
         pop %esp
         NEXT
+	#+end_src
 
-/*
-        INPUT AND OUTPUT ----------------------------------------------------------------------
+* Input and Output
 
         These are our first really meaty/complicated FORTH primitives.  I have chosen to write them in
         assembler, but surprisingly in "real" FORTH implementations these are often written in terms
@@ -1294,6 +1303,7 @@ var_\name :
         it automatically.  The other thing that KEY does is if it detects that stdin has closed, it
         exits the program, which is why when you hit ^D the FORTH system cleanly exits.
 
+     #+begin_example
      buffer                           bufftop
         |                                |
         V                                V
@@ -1305,8 +1315,10 @@ var_\name :
                        currkey (next character to read)
 
         <---------------------- BUFFER_SIZE (4096 bytes) ---------------------->
-*/
+     #+end_example
 
+
+	#+begin_src asm
         defcode "KEY",3,,KEY
         call _KEY
         push %eax               // push return value on stack
@@ -1350,7 +1362,7 @@ bufftop:
         By contrast, output is much simpler.  The FORTH word EMIT writes out a single byte to stdout.
         This implementation just uses the write system call.  No attempt is made to buffer output, but
         it would be a good exercise to add it.
-*/
+,*/
 
         defcode "EMIT",4,,EMIT
         pop %eax
@@ -1372,8 +1384,9 @@ _EMIT:
         .data                   // NB: easier to fit in the .data section
 emit_scratch:
         .space 1                // scratch used by EMIT
+	#+end_src
 
-/*
+
         Back to input, WORD is a FORTH word which reads the next full word of input.
 
         What it does in detail is that it first skips any blanks (spaces, tabs, newlines and so on).
@@ -1400,8 +1413,9 @@ emit_scratch:
         : BAR WORD FOO ;
         is an error (or at least it doesn't do what you might expect).  Later we'll talk about compiling
         and immediate mode, and you'll understand why.
-*/
 
+
+	#+begin_src asm
         defcode "WORD",4,,WORD
         call _WORD
         push %edi               // push base address
@@ -1443,8 +1457,9 @@ _WORD:
         // overwrite this buffer.  Maximum word length is 32 chars.
 word_buffer:
         .space 32
+	#+end_src
 
-/*
+
         As well as reading in words we'll need to read in numbers and for that we are using a function
         called NUMBER.  This parses a numeric string such as one returned by WORD and pushes the
         number on the parameter stack.
@@ -1459,7 +1474,8 @@ word_buffer:
         At the top of stack we return the number of unconverted characters (ie. if 0 then all characters
         were converted, so there is no error).  Second from top of stack is the parsed number or a
         partial value if there was an error.
-*/
+
+	#+begin_src asm
         defcode "NUMBER",6,,NUMBER
         pop %ecx                // length of string
         pop %edi                // start address of string
@@ -1520,9 +1536,10 @@ _NUMBER:
         neg %eax
 
 5:      ret
+	#+end_src
 
-/*
-        DICTIONARY LOOK UPS ----------------------------------------------------------------------
+
+* Dictionary Look Ups
 
         We're building up to our prelude on how FORTH code is compiled, but first we need yet more infrastructure.
 
@@ -1532,6 +1549,7 @@ _NUMBER:
 
         So if DOUBLE is defined in the dictionary, then WORD DOUBLE FIND returns the following pointer:
 
+    #+begin_example
     pointer to this
         |
         |
@@ -1539,12 +1557,14 @@ _NUMBER:
         +---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
         | LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          | EXIT       |
         +---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+    #+end_example
 
         See also >CFA and >DFA.
 
         FIND doesn't find dictionary entries which are flagged as HIDDEN.  See below for why.
-*/
 
+
+	#+begin_src asm
         defcode "FIND",4,,FIND
         pop %ecx                // %ecx = length
         pop %edi                // %edi = address
@@ -1590,14 +1610,15 @@ _FIND:
         pop %esi
         xor %eax,%eax           // Return zero to indicate not found.
         ret
+	#+end_src
 
-/*
         FIND returns the dictionary pointer, but when compiling we need the codeword pointer (recall
         that FORTH definitions are compiled into lists of codeword pointers).  The standard FORTH
         word >CFA turns a dictionary pointer into a codeword pointer.
 
         The example below shows the result of:
 
+		#+begin_example
                 WORD DOUBLE FIND >CFA
 
         FIND returns a pointer to this
@@ -1608,6 +1629,7 @@ _FIND:
         | LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          | EXIT       |
         +---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
                                                    codeword
+		#+end_example
 
         Notes:
 
@@ -1620,8 +1642,9 @@ _FIND:
         quickly.
 
         What does CFA stand for?  My best guess is "Code Field Address".
-*/
 
+
+	#+begin_src asm
         defcode ">CFA",4,,TCFA
         pop %edi
         call _TCFA
@@ -1637,11 +1660,12 @@ _TCFA:
         addl $3,%edi            // The codeword is 4-byte aligned.
         andl $~3,%edi
         ret
+	#+end_src
 
-/*
         Related to >CFA is >DFA which takes a dictionary entry address as returned by FIND and
         returns a pointer to the first data field.
 
+	#+begin_example
         FIND returns a pointer to this
         |                               >CFA converts it to a pointer to this
         |                                          |
@@ -1652,27 +1676,33 @@ _TCFA:
         | LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          | EXIT       |
         +---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
                                                    codeword
+	#+end_example
 
         (Note to those following the source of FIG-FORTH / ciforth: My >DFA definition is
         different from theirs, because they have an extra indirection).
 
         You can see that >DFA is easily defined in FORTH just by adding 4 to the result of >CFA.
-*/
 
+
+	#+begin_src asm
         defword ">DFA",4,,TDFA
         .int TCFA               // >CFA         (get code field address)
         .int INCR4              // 4+           (add 4 to it to get to next word)
         .int EXIT               // EXIT         (return from FORTH word)
+	#+end_src
 
-/*
-        COMPILING ----------------------------------------------------------------------
+
+* Compiling
 
         Now we'll talk about how FORTH compiles words.  Recall that a word definition looks like this:
 
+		#+begin_example forth
                 : DOUBLE DUP + ;
+		#+end_example
 
         and we have to turn this into:
 
+	  #+begin_example
           pointer to previous word
            ^
            |
@@ -1682,6 +1712,7 @@ _TCFA:
            ^       len                         pad  codeword      |
            |                                                      V
           LATEST points here                            points to codeword of DUP
+	  #+end_example
 
         There are several problems to solve.  Where to put the new word?  How do we read words?  How
         do we define the words : (COLON) and ; (SEMICOLON)?
@@ -1708,6 +1739,7 @@ _TCFA:
 
         (2) Construct the dictionary entry -- just the header part -- in user memory:
 
+    #+begin_example
     pointer to previous word (from LATEST)                      +-- Afterwards, HERE points here, where
            ^                                                    |   the interpreter will start appending
            |                                                    V   codewords.
@@ -1715,6 +1747,7 @@ _TCFA:
         | LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      |
         +---------+---+---+---+---+---+---+---+---+------------+
                    len                         pad  codeword
+    #+end_example
 
         (3) Set LATEST to point to the newly defined word, ...
 
@@ -1726,14 +1759,17 @@ _TCFA:
 
         After : has run, our input is here:
 
+	#+begin_example
         : DOUBLE DUP + ;
                  ^
                  |
                 Next byte returned by KEY will be the 'D' character of DUP
+	#+end_example
 
         so the interpreter (now it's in compile mode, so I guess it's really the compiler) reads "DUP",
         looks it up in the dictionary, gets its codeword pointer, and appends it:
 
+									     #+begin_example
                                                                              +-- HERE updated to point here.
                                                                              |
                                                                              V
@@ -1751,6 +1787,7 @@ _TCFA:
         | LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          |
         +---------+---+---+---+---+---+---+---+---+------------+------------+------------+
                    len                         pad  codeword
+									     #+end_example
 
         The issue is what happens next.  Obviously what we _don't_ want to happen is that we
         read ";" and compile it and go on compiling everything afterwards.
@@ -1768,12 +1805,14 @@ _TCFA:
 
         After the interpreter reads ; and executes it 'immediately', we get this:
 
+	#+begin_example
         +---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
         | LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          | EXIT       |
         +---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
                    len                         pad  codeword                                           ^
                                                                                                        |
                                                                                                       HERE
+	#+end_example
         STATE is set to 0.
 
         And that's it, job done, our new definition is compiled, and we're back in immediate mode
@@ -1790,6 +1829,7 @@ _TCFA:
         going to define them.  The : (COLON) function can be made a little bit more general by writing
         it in two parts.  The first part, called CREATE, makes just the header:
 
+						   #+begin_example
                                                    +-- Afterwards, HERE points here.
                                                    |
                                                    V
@@ -1797,10 +1837,12 @@ _TCFA:
         | LINK    | 6 | D | O | U | B | L | E | 0 |
         +---------+---+---+---+---+---+---+---+---+
                    len                         pad
+						   #+end_example
 
         and the second part, the actual definition of : (COLON), calls CREATE and appends the
         DOCOL codeword, so leaving:
 
+								#+begin_example
                                                                 +-- Afterwards, HERE points here.
                                                                 |
                                                                 V
@@ -1808,12 +1850,14 @@ _TCFA:
         | LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      |
         +---------+---+---+---+---+---+---+---+---+------------+
                    len                         pad  codeword
+								#+end_example
 
         CREATE is a standard FORTH word and the advantage of this split is that we can reuse it to
         create other types of words (not just ones which contain code, but words which contain variables,
         constants and other data).
-*/
 
+
+	#+begin_src asm
         defcode "CREATE",6,,CREATE
 
         // Get the name length and address.
@@ -1840,14 +1884,16 @@ _TCFA:
         movl %eax,var_LATEST
         movl %edi,var_HERE
         NEXT
+	#+end_src
 
-/*
+
         Because I want to define : (COLON) in FORTH, not assembler, we need a few more FORTH words
         to use.
 
         The first is , (COMMA) which is a standard FORTH word which appends a 32 bit integer to the user
         memory pointed to by HERE, and adds 4 to HERE.  So the action of , (COMMA) is:
 
+							#+begin_example
                                                         previous value of HERE
                                                                  |
                                                                  V
@@ -1857,13 +1903,15 @@ _TCFA:
                    len                         pad                            ^
                                                                               |
                                                                         new value of HERE
+							#+end_example
 
         and <data> is whatever 32 bit integer was at the top of the stack.
 
         , (COMMA) is quite a fundamental operation when compiling.  It is used to append codewords
         to the current word that is being compiled.
-*/
 
+
+	#+begin_src asm
         defcode ",",1,,COMMA
         pop %eax                // Code pointer to store.
         call _COMMA
@@ -1873,8 +1921,8 @@ _COMMA:
         stosl                   // Store it.
         movl %edi,var_HERE      // Update HERE (incremented)
         ret
+	#+end_src
 
-/*
         Our definitions of : (COLON) and ; (SEMICOLON) will need to switch to and from compile mode.
 
         Immediate mode vs. compile mode is stored in the global variable STATE, and by updating this

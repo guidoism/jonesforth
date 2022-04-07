@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2022-04-06 Wed 23:07 -->
+<!-- 2022-04-06 Wed 23:31 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -244,19 +244,27 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgc909375">1. Introduction</a></li>
-<li><a href="#org4b01451">2. Acknowledgements</a></li>
-<li><a href="#org61c14e3">3. Public Domain</a></li>
-<li><a href="#org67adc79">4. Assembling</a></li>
-<li><a href="#orga2cc47b">5. Assembler</a></li>
-<li><a href="#org3edecde">6. The Dictionary</a></li>
-<li><a href="#org3bb235c">7. Direct Threaded Code</a></li>
-<li><a href="#orgf7e675b">8. Indirect Threaded Code</a></li>
-<li><a href="#org7bea64e">9. The Interpreter and Return Stack</a></li>
-<li><a href="#org32f1cc7">10. Starting Up</a></li>
-<li><a href="#org3a0b01e">11. Built-In Words</a></li>
-<li><a href="#orgad395af">12. Returning From Forth Words</a></li>
-<li><a href="#orgb7fd272">13. Literals</a></li>
+<li><a href="#orgbc9808d">1. Introduction</a></li>
+<li><a href="#orge79cc88">2. Acknowledgements</a></li>
+<li><a href="#orgd3392ec">3. Public Domain</a></li>
+<li><a href="#org4f50c78">4. Assembling</a></li>
+<li><a href="#org40c9a1d">5. Assembler</a></li>
+<li><a href="#org820fb08">6. The Dictionary</a></li>
+<li><a href="#org0e868c6">7. Direct Threaded Code</a></li>
+<li><a href="#orga2283bf">8. Indirect Threaded Code</a></li>
+<li><a href="#orgc0ebaa2">9. The Interpreter and Return Stack</a></li>
+<li><a href="#org943a4cf">10. Starting Up</a></li>
+<li><a href="#orgb1aa2ba">11. Built-In Words</a></li>
+<li><a href="#org60b6de2">12. Returning From Forth Words</a></li>
+<li><a href="#org1125940">13. Literals</a></li>
+<li><a href="#org8292166">14. Memory</a></li>
+<li><a href="#orgfbdf3a0">15. Built-In Variables</a></li>
+<li><a href="#org713b196">16. Built-In Constants</a></li>
+<li><a href="#orged975fe">17. Return Stack</a></li>
+<li><a href="#org63509cd">18. Parameter (Data) Stack</a></li>
+<li><a href="#org6d31b5a">19. Input and Output</a></li>
+<li><a href="#org0d31f54">20. Dictionary Look Ups</a></li>
+<li><a href="#org81c32ab">21. Compiling</a></li>
 </ul>
 </div>
 </div>
@@ -280,8 +288,8 @@ Taken from jonesforth.S,v 1.47 2009-09-11 08:33:13 rich Exp
 </pre>
 </div>
 
-<div id="outline-container-orgc909375" class="outline-2">
-<h2 id="orgc909375"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-orgbc9808d" class="outline-2">
+<h2 id="orgbc9808d"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 FORTH is one of those alien languages which most working programmers regard in the same
@@ -372,8 +380,8 @@ Discussion and criticism of this FORTH here: <a href="http://lambda-the-ultimate
 </div>
 </div>
 
-<div id="outline-container-org4b01451" class="outline-2">
-<h2 id="org4b01451"><span class="section-number-2">2</span> Acknowledgements</h2>
+<div id="outline-container-orge79cc88" class="outline-2">
+<h2 id="orge79cc88"><span class="section-number-2">2</span> Acknowledgements</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This code draws heavily on the design of LINA FORTH (<a href="http://home.hccnet.nl/a.w.m.van.der.horst/lina.html">http://home.hccnet.nl/a.w.m.van.der.horst/lina.html</a>)
@@ -395,8 +403,8 @@ original program which I still have on original cassette tape kept nagging away 
 </div>
 </div>
 
-<div id="outline-container-org61c14e3" class="outline-2">
-<h2 id="org61c14e3"><span class="section-number-2">3</span> Public Domain</h2>
+<div id="outline-container-orgd3392ec" class="outline-2">
+<h2 id="orgd3392ec"><span class="section-number-2">3</span> Public Domain</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 I, the copyright holder of this work, hereby release it into the public domain. This applies worldwide.
@@ -409,8 +417,8 @@ without any conditions, unless such conditions are required by law.
 </div>
 </div>
 
-<div id="outline-container-org67adc79" class="outline-2">
-<h2 id="org67adc79"><span class="section-number-2">4</span> Assembling</h2>
+<div id="outline-container-org4f50c78" class="outline-2">
+<h2 id="org4f50c78"><span class="section-number-2">4</span> Assembling</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 If you want to actually run this FORTH, rather than just read it, you will need Linux on an
@@ -451,8 +459,8 @@ cat jonesforth.f myfunctions.f - | ./jonesforth
 </div>
 </div>
 
-<div id="outline-container-orga2cc47b" class="outline-2">
-<h2 id="orga2cc47b"><span class="section-number-2">5</span> Assembler</h2>
+<div id="outline-container-org40c9a1d" class="outline-2">
+<h2 id="org40c9a1d"><span class="section-number-2">5</span> Assembler</h2>
 <div class="outline-text-2" id="text-5">
 <p>
 (You can just skip to the next section &#x2013; you don't need to be able to read assembler to
@@ -496,8 +504,8 @@ Now the tutorial starts in earnest.
 </div>
 </div>
 
-<div id="outline-container-org3edecde" class="outline-2">
-<h2 id="org3edecde"><span class="section-number-2">6</span> The Dictionary</h2>
+<div id="outline-container-org820fb08" class="outline-2">
+<h2 id="org820fb08"><span class="section-number-2">6</span> The Dictionary</h2>
 <div class="outline-text-2" id="text-6">
 <p>
 In FORTH as you will know, functions are called "words", and just as in other languages they
@@ -515,7 +523,7 @@ Words, both built-in ones and ones which the programmer defines later, are store
 which is just a linked list of dictionary entries.
 </p>
 
-<pre class="example" id="org144a8cb">
+<pre class="example" id="orgfb97c27">
 &lt;--- DICTIONARY ENTRY (HEADER) -----------------------&gt;
 +------------------------+--------+---------- - - - - +----------- - - - -
 | LINK POINTER           | LENGTH/| NAME              | DEFINITION
@@ -542,7 +550,7 @@ other words, the head of this linked list.
 DOUBLE and QUADRUPLE might look like this:
 </p>
 
-<pre class="example" id="orgfda0fa3">
+<pre class="example" id="orgda76ce5">
   pointer to previous word
    ^
    |
@@ -581,8 +589,8 @@ the old definition.  Only words defined after the new definition use the new def
 </div>
 </div>
 
-<div id="outline-container-org3bb235c" class="outline-2">
-<h2 id="org3bb235c"><span class="section-number-2">7</span> Direct Threaded Code</h2>
+<div id="outline-container-org0e868c6" class="outline-2">
+<h2 id="org0e868c6"><span class="section-number-2">7</span> Direct Threaded Code</h2>
 <div class="outline-text-2" id="text-7">
 <p>
 Now we'll get to the really crucial bit in understanding FORTH, so go and get a cup of tea
@@ -598,7 +606,7 @@ you are only allowed to call functions without arguments.  (Don't worry for now 
 language would be completely useless!)  So in our peculiar C, code would look like this:
 </p>
 
-<pre class="example" id="orge7f1157">
+<pre class="example" id="org30c8456">
 f ()
 {
   a ();
@@ -613,7 +621,7 @@ Probably into assembly code like this.  On the right hand side I've written the 
 i386 machine code.
 </p>
 
-<pre class="example" id="orgdae5939">
+<pre class="example" id="orgc63384c">
 f:
   CALL a                        E8 08 00 00 00
   CALL b                        E8 1C 00 00 00
@@ -628,7 +636,7 @@ by the repeated "E8" bytes.  We can save 20% in code size (and therefore, in exp
 by compressing this into just:
 </p>
 
-<pre class="example" id="org4ea9125">
+<pre class="example" id="orgeb104e7">
 08 00 00 00             Just the function addresses, without
 1C 00 00 00             the CALL prefix.
 2C 00 00 00
@@ -657,7 +665,7 @@ two assembly instructions which turn into just 3 bytes of machine code.  Let's s
 pointer to the next word to execute in the <code>%esi</code> register:
 </p>
 
-<pre class="example" id="orgb5ac6e1">
+<pre class="example" id="org1cbb0f5">
         08 00 00 00     &lt;- We're executing this one now.  %esi is the _next_ one to execute.
 %esi -&gt; 1C 00 00 00
         2C 00 00 00
@@ -669,7 +677,7 @@ two things.  Firstly it reads the memory at %esi into the accumulator (%eax).  S
 increments %esi by 4 bytes.  So after LODSL, the situation now looks like this:
 </p>
 
-<pre class="example" id="orgb627822">
+<pre class="example" id="orge3507d8">
         08 00 00 00     &lt;- We're still executing this one
         1C 00 00 00     &lt;- %eax now contains this address (0x0000001C)
 %esi -&gt; 2C 00 00 00
@@ -680,7 +688,7 @@ Now we just need to jump to the address in %eax.  This is again just a single x8
 written <code>JMP *(%eax)</code>.  And after doing the jump, the situation looks like:
 </p>
 
-<pre class="example" id="org003f6a9">
+<pre class="example" id="org07acb71">
         08 00 00 00
         1C 00 00 00     &lt;- Now we're executing this subroutine.
 %esi -&gt; 2C 00 00 00
@@ -728,7 +736,7 @@ to act as a kind of instruction pointer, pointing to the next function in the li
 I'll just give you a hint of what is to come by saying that a FORTH definition such as:
 </p>
 
-<pre class="example" id="org09654cc">
+<pre class="example" id="org76eb082">
 : QUADRUPLE DOUBLE DOUBLE ;
 </pre>
 
@@ -747,8 +755,8 @@ I lied about <code>JMP *(%eax)</code>.
 </div>
 </div>
 
-<div id="outline-container-orgf7e675b" class="outline-2">
-<h2 id="orgf7e675b"><span class="section-number-2">8</span> Indirect Threaded Code</h2>
+<div id="outline-container-orga2283bf" class="outline-2">
+<h2 id="orga2283bf"><span class="section-number-2">8</span> Indirect Threaded Code</h2>
 <div class="outline-text-2" id="text-8">
 <p>
 It turns out that direct threaded code is interesting but only if you want to just execute
@@ -756,7 +764,7 @@ a list of functions written in assembly language.  So <code>QUADRUPLE</code> wou
 was an assembly language function.  In the direct threaded code, <code>QUADRUPLE</code> would look like:
 </p>
 
-<pre class="example" id="org829338b">
+<pre class="example" id="orgdf8dde9">
         +------------------+
         | addr of DOUBLE  --------------------&gt; (assembly code to do the double)
         +------------------+                    NEXT
@@ -777,7 +785,7 @@ The extra indirection is the reason for the brackets in <code>JMP *(%eax)</code>
 Let's have a look at how <code>QUADRUPLE</code> and <code>DOUBLE</code> really look in FORTH:
 </p>
 
-<pre class="example" id="orgb0a388f">
+<pre class="example" id="org814084b">
 : QUADRUPLE DOUBLE DOUBLE ;
 
 +------------------+
@@ -838,7 +846,7 @@ The assembly code for <code>DUP</code> eventually does a <code>NEXT</code>.  Tha
 jumps to the indirect <code>%eaxk                    jumps to the address in the codeword of =+</code>, ie. the assembly code to implement <code>+</code>
 </p>
 
-<pre class="example" id="orgbb6459e">
+<pre class="example" id="orge9ef56a">
 +------------------+
 | codeword         |
 +------------------+
@@ -892,8 +900,8 @@ ie. a function which contains a number like <code>: DOUBLE 2 * ;</code> ?
 </div>
 </div>
 
-<div id="outline-container-org7bea64e" class="outline-2">
-<h2 id="org7bea64e"><span class="section-number-2">9</span> The Interpreter and Return Stack</h2>
+<div id="outline-container-orgc0ebaa2" class="outline-2">
+<h2 id="orgc0ebaa2"><span class="section-number-2">9</span> The Interpreter and Return Stack</h2>
 <div class="outline-text-2" id="text-9">
 <p>
 Going at these in no particular order, let's talk about issues (3) and (2), the interpreter
@@ -985,7 +993,7 @@ Just to make this absolutely clear, let's see how <code>DOCOL</code> works when 
 into <code>DOUBLE</code>:
 </p>
 
-<pre class="example" id="org771d972">
+<pre class="example" id="org051078b">
         QUADRUPLE:
         +------------------+
         | codeword         |
@@ -1004,7 +1012,7 @@ pushes the old <code>%esi</code> on the return stack.  <code>%eax</code> points 
 just add 4 on to it to get our new <code>%esi</code>:
 </p>
 
-<pre class="example" id="orgecc7eb9">
+<pre class="example" id="orgdde00ff">
                 QUADRUPLE:
                 +------------------+
                 | codeword         |
@@ -1036,8 +1044,8 @@ written in FORTH (it's not an assembler primitive) and so uses <code>DOCOL</code
 </div>
 </div>
 
-<div id="outline-container-org32f1cc7" class="outline-2">
-<h2 id="org32f1cc7"><span class="section-number-2">10</span> Starting Up</h2>
+<div id="outline-container-org943a4cf" class="outline-2">
+<h2 id="org943a4cf"><span class="section-number-2">10</span> Starting Up</h2>
 <div class="outline-text-2" id="text-10">
 <p>
 Now let's get down to nuts and bolts.  When we start the program we need to set up
@@ -1076,15 +1084,15 @@ cold_start:                     // High-level code without a codeword.
 </div>
 </div>
 
-<div id="outline-container-org3a0b01e" class="outline-2">
-<h2 id="org3a0b01e"><span class="section-number-2">11</span> Built-In Words</h2>
+<div id="outline-container-orgb1aa2ba" class="outline-2">
+<h2 id="orgb1aa2ba"><span class="section-number-2">11</span> Built-In Words</h2>
 <div class="outline-text-2" id="text-11">
 <p>
 Remember our dictionary entries (headers)?  Let's bring those together with the codeword
 and data words to see how <code>: DOUBLE DUP + ;</code> really looks in memory.
 </p>
 
-<pre class="example" id="org0234325">
+<pre class="example" id="orga439a6d">
   pointer to previous word
    ^
    |
@@ -1108,7 +1116,7 @@ unsure of them).
 The long way would be:
 </p>
 
-<pre class="example" id="orgbf6f75e">
+<pre class="example" id="orgdbb5e1a">
         .int &lt;link to previous word&gt;
         .byte 6                 // len
         .ascii "DOUBLE"         // string
@@ -1124,7 +1132,7 @@ That's going to get quite tedious rather quickly, so here I define an assembler 
 so that I can just write:
 </p>
 
-<pre class="example" id="org25316b8">
+<pre class="example" id="orgd5bd351">
 defword "DOUBLE",6,,DOUBLE
 .int DUP,PLUS,EXIT
 </pre>
@@ -1176,7 +1184,7 @@ some common FORTH words in assembly language for speed, even though I could writ
 This is what <code>DUP</code> looks like in memory:
 </p>
 
-<pre class="example" id="org1c99800">
+<pre class="example" id="orga4aefac">
   pointer to previous word
    ^
    |
@@ -1486,15 +1494,15 @@ NEXT
 </div>
 </div>
 
-<div id="outline-container-orgad395af" class="outline-2">
-<h2 id="orgad395af"><span class="section-number-2">12</span> Returning From Forth Words</h2>
+<div id="outline-container-org60b6de2" class="outline-2">
+<h2 id="org60b6de2"><span class="section-number-2">12</span> Returning From Forth Words</h2>
 <div class="outline-text-2" id="text-12">
 <p>
 Time to talk about what happens when we <code>EXIT</code> a function.  In this diagram <code>QUADRUPLE</code> has called
 <code>DOUBLE</code>, and <code>DOUBLE</code> is about to exit (look at where %esi is pointing):
 </p>
 
-<pre class="example" id="org7f162b1">
+<pre class="example" id="org6a26719">
 QUADRUPLE
 +------------------+
 | codeword         |
@@ -1514,7 +1522,7 @@ QUADRUPLE
 What happens when the + function does <code>NEXT</code>?  Well, the following code is executed.
 </p>
 
-<pre class="example" id="org73bd98c">
+<pre class="example" id="org5011b0c">
 defcode "EXIT",4,,EXIT
 POPRSP %esi             // pop return stack into %esi
 NEXT
@@ -1525,7 +1533,7 @@ NEXT
 So after this (but just before <code>NEXT</code>) we get:
 </p>
 
-<pre class="example" id="orgb04ed48">
+<pre class="example" id="orgfed8e0c">
         QUADRUPLE
         +------------------+
         | codeword         |
@@ -1547,18 +1555,17 @@ And <code>NEXT</code> just completes the job by, well, in this case just by call
 </div>
 </div>
 
-<div id="outline-container-orgb7fd272" class="outline-2">
-<h2 id="orgb7fd272"><span class="section-number-2">13</span> Literals</h2>
+<div id="outline-container-org1125940" class="outline-2">
+<h2 id="org1125940"><span class="section-number-2">13</span> Literals</h2>
 <div class="outline-text-2" id="text-13">
 <p>
 The final point I "glossed over" before was how to deal with functions that do anything
-apart from calling other functions.  For example, suppose that DOUBLE was defined like this:
+apart from calling other functions.  For example, suppose that <code>DOUBLE</code> was defined like this:
 </p>
 
-<pre class="example">
-DOUBLE 2 * ;
+<pre class="example" id="orgb210232">
+: DOUBLE 2 * ;
 </pre>
-
 
 <p>
 It does the same thing, but how do we compile it since it contains the literal 2?  One way
@@ -1567,224 +1574,184 @@ a function for every single literal that you wanted to use.
 </p>
 
 <p>
-FORTH solves this by compiling the function using a special word called LIT:
+FORTH solves this by compiling the function using a special word called <code>LIT</code>:
+</p>
+
+<pre class="example" id="org33a89cb">
++---------------------------+-------+-------+-------+-------+-------+
+| (usual header of DOUBLE)  | DOCOL | LIT   | 2     | *     | EXIT  |
++---------------------------+-------+-------+-------+-------+-------+
+</pre>
+
+<p>
+<code>LIT</code> is executed in the normal way, but what it does next is definitely not normal.  It
+looks at <code>%esi</code> (which now points to the number 2), grabs it, pushes it on the stack, then
+manipulates <code>%esi</code> in order to skip the number as if it had never been there.
 </p>
 
 <p>
-<del>---------------------------</del>-------<del>-------</del>-------<del>-------</del>--&#x2013;&#x2014;+
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">(usual header of DOUBLE)</td>
-<td class="org-left">DOCOL</td>
-<td class="org-left">LIT</td>
-<td class="org-right">2</td>
-<td class="org-left">*</td>
-<td class="org-left">EXIT</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------------------------</del>-------<del>-------</del>-------<del>-------</del>--&#x2013;&#x2014;+
+What's neat is that the whole grab/manipulate can be done using a single byte single
+i386 instruction, our old friend <code>LODSL</code>.  Rather than me drawing more ASCII-art diagrams,
+see if you can find out how <code>LIT</code> works:
 </p>
 
-<p>
-LIT is executed in the normal way, but what it does next is definitely not normal.  It
-looks at %esi (which now points to the number 2), grabs it, pushes it on the stack, then
-manipulates %esi in order to skip the number as if it had never been there.
-</p>
-
-<p>
-        What's neat is that the whole grab/manipulate can be done using a single byte single
-        i386 instruction, our old friend LODSL.  Rather than me drawing more ASCII-art diagrams,
-        see if you can find out how LIT works:
-*/
-</p>
-
-<p>
-defcode "LIT",3,,LIT
-<i>/ %esi points to the next command, but in this case it points to the next
-/</i> literal 32 bit integer.  Get that literal into %eax and increment %esi.
+<div class="org-src-container">
+<pre class="src src-asm">defcode "LIT",3,,LIT
+// %esi points to the next command, but in this case it points to the next
+// literal 32 bit integer.  Get that literal into %eax and increment %esi.
 // On x86, it's a convenient single byte instruction!  (cf. NEXT macro)
 lodsl
 push %eax               // push the literal number on to stack
 NEXT
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8292166" class="outline-2">
+<h2 id="org8292166"><span class="section-number-2">14</span> Memory</h2>
+<div class="outline-text-2" id="text-14">
+<p>
+An important point about FORTH is that it gives you direct access to the lowest levels
+of the machine.  Manipulating memory directly is done frequently in FORTH, and these are
+the primitive words for doing it.
 </p>
 
-<p>
-/*
-        MEMORY -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
-
-<p>
-        An important point about FORTH is that it gives you direct access to the lowest levels
-        of the machine.  Manipulating memory directly is done frequently in FORTH, and these are
-        the primitive words for doing it.
-*/
-</p>
-
-<p>
-defcode "!",1,,STORE
-pop %ebx                <i>/ address to store at
-pop %eax                /</i> data to store there
+<div class="org-src-container">
+<pre class="src src-asm">defcode "!",1,,STORE
+pop %ebx                // address to store at
+pop %eax                // data to store there
 mov %eax,(%ebx)         // store it
 NEXT
-</p>
 
-<p>
 defcode "@",1,,FETCH
-pop %ebx                <i>/ address to fetch
-mov (%ebx),%eax         /</i> fetch it
+pop %ebx                // address to fetch
+mov (%ebx),%eax         // fetch it
 push %eax               // push value onto stack
 NEXT
-</p>
 
-<p>
 defcode "+!",2,,ADDSTORE
-pop %ebx                <i>/ address
-pop %eax                /</i> the amount to add
+pop %ebx                // address
+pop %eax                // the amount to add
 addl %eax,(%ebx)        // add it
 NEXT
-</p>
 
-<p>
 defcode "-!",2,,SUBSTORE
-pop %ebx                <i>/ address
-pop %eax                /</i> the amount to subtract
+pop %ebx                // address
+pop %eax                // the amount to subtract
 subl %eax,(%ebx)        // add it
 NEXT
+</pre>
+</div>
+
+<p>
+<code>!</code> and <code>@</code> (<code>STORE</code> and <code>FETCHk) store 32-bit words.  It's also useful to be able to read and write bytes
+        so we also define standard words =C@</code> and <code>C!</code>.
 </p>
 
 <p>
-/*
-        ! and @ (STORE and FETCH) store 32-bit words.  It's also useful to be able to read and write bytes
-        so we also define standard words C@ and C!.
+Byte-oriented operations only work on architectures which permit them (i386 is one of those).
 </p>
 
-<p>
-       Byte-oriented operations only work on architectures which permit them (i386 is one of those).
-*/
-</p>
 
-<p>
-defcode "C!",2,,STOREBYTE
-pop %ebx                <i>/ address to store at
-pop %eax                /</i> data to store there
-movb %al,(%ebx)         // store it
-NEXT
-</p>
+<div class="org-src-container">
+<pre class="src src-asm">	defcode "C!",2,,STOREBYTE
+	pop %ebx                // address to store at
+	pop %eax                // data to store there
+	movb %al,(%ebx)         // store it
+	NEXT
 
-<p>
-defcode "C@",2,,FETCHBYTE
-pop %ebx                // address to fetch
-xor %eax,%eax
-movb (%ebx),%al         <i>/ fetch it
-push %eax               /</i> push value onto stack
-NEXT
-</p>
+	defcode "C@",2,,FETCHBYTE
+	pop %ebx                // address to fetch
+	xor %eax,%eax
+	movb (%ebx),%al         // fetch it
+	push %eax               // push value onto stack
+	NEXT
 
-<p>
-<i>* C@C! is a useful byte copy primitive. *</i>
-        defcode "C@C!",4,,CCOPY
-        movl 4(%esp),%ebx       <i>/ source address
-        movb (%ebx),%al         /</i> get source character
-        pop %edi                <i>/ destination address
-        stosb                   /</i> copy to destination
-        push %edi               <i>/ increment destination address
-        incl 4(%esp)            /</i> increment source address
-        NEXT
-</p>
+/* C@C! is a useful byte copy primitive. */
+	defcode "C@C!",4,,CCOPY
+	movl 4(%esp),%ebx       // source address
+	movb (%ebx),%al         // get source character
+	pop %edi                // destination address
+	stosb                   // copy to destination
+	push %edi               // increment destination address
+	incl 4(%esp)            // increment source address
+	NEXT
 
-<p>
-<i>* and CMOVE is a block copy operation. *</i>
-        defcode "CMOVE",5,,CMOVE
-        mov %esi,%edx           <i>/ preserve %esi
-        pop %ecx                /</i> length
-        pop %edi                <i>/ destination address
-        pop %esi                /</i> source address
-        rep movsb               <i>/ copy source to destination
-        mov %edx,%esi           /</i> restore %esi
-        NEXT
-</p>
+/* and CMOVE is a block copy operation. */
+	defcode "CMOVE",5,,CMOVE
+	mov %esi,%edx           // preserve %esi
+	pop %ecx                // length
+	pop %edi                // destination address
+	pop %esi                // source address
+	rep movsb               // copy source to destination
+	mov %edx,%esi           // restore %esi
+	NEXT
+</pre>
+</div>
+</div>
+</div>
 
-<p>
-/*
-        BUILT-IN VARIABLES -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
-
+<div id="outline-container-orgfbdf3a0" class="outline-2">
+<h2 id="orgfbdf3a0"><span class="section-number-2">15</span> Built-In Variables</h2>
+<div class="outline-text-2" id="text-15">
 <p>
 These are some built-in variables and related standard FORTH words.  Of these, the only one that we
-have discussed so far was LATEST, which points to the last (most recently defined) word in the
-FORTH dictionary.  LATEST is also a FORTH word which pushes the address of LATEST (the variable)
-on to the stack, so you can read or write it using @ and ! operators.  For example, to print
-the current value of LATEST (and this can apply to any FORTH variable) you would do:
+have discussed so far was <code>LATEST</code>, which points to the last (most recently defined) word in the
+FORTH dictionary.  <code>LATEST</code> is also a FORTH word which pushes the address of <code>LATEST</code> (the variable)
+on to the stack, so you can read or write it using <code>@</code> and <code>!</code> operators.  For example, to print
+the current value of <code>LATEST</code> (and this can apply to any FORTH variable) you would do:
 </p>
 
-<p>
+<pre class="example" id="org9a92d90">
 LATEST @ . CR
-</p>
+</pre>
 
 <p>
-        To make defining variables shorter, I'm using a macro called defvar, similar to defword and
-        defcode above.  (In fact the defvar macro uses defcode to do the dictionary header).
-*/
+To make defining variables shorter, I'm using a macro called defvar, similar to defword and
+defcode above.  (In fact the defvar macro uses defcode to do the dictionary header).
 </p>
+
+<div class="org-src-container">
+<pre class="src src-asm">	.macro defvar name, namelen, flags=0, label, initial=0
+	defcode \name,\namelen,\flags,\label
+	push $var_\name
+	NEXT
+	.data
+	.align 4
+var_\name :
+	.int \initial
+	.endm
+</pre>
+</div>
 
 <p>
-        .macro defvar name, namelen, flags=0, label, initial=0
-        defcode \name,\namelen,\flags,\label
-        push $var<sub>\name</sub>
-        NEXT
-        .data
-        .align 4
-var<sub>\name</sub> :
-        .int \initial
-        .endm
+The built-in variables are:
 </p>
 
-<p>
-/*
-        The built-in variables are:
-</p>
+<ul class="org-ul">
+<li><code>STATE</code>           Is the interpreter executing code (0) or compiling a word (non-zero)?</li>
+<li><code>LATEST</code>          Points to the latest (most recently defined) word in the dictionary.</li>
+<li><code>HERE</code>            Points to the next free byte of memory.  When compiling, compiled words go here.</li>
+<li><code>S0</code>              Stores the address of the top of the parameter stack.</li>
+<li><code>BASE</code>            The current base for printing and reading numbers.</li>
+</ul>
 
-<p>
-STATE           Is the interpreter executing code (0) or compiling a word (non-zero)?
-LATEST          Points to the latest (most recently defined) word in the dictionary.
-HERE            Points to the next free byte of memory.  When compiling, compiled words go here.
-S0              Stores the address of the top of the parameter stack.
-BASE            The current base for printing and reading numbers.
-</p>
 
-<p>
-*/
-        defvar "STATE",5,,STATE
-        defvar "HERE",4,,HERE
-        defvar "LATEST",6,,LATEST,name<sub>SYSCALL0</sub> // SYSCALL0 must be last in built-in dictionary
-        defvar "S0",2,,SZ
-        defvar "BASE",4,,BASE,10
-</p>
+<div class="org-src-container">
+<pre class="src src-asm">defvar "STATE",5,,STATE
+defvar "HERE",4,,HERE
+defvar "LATEST",6,,LATEST,name_SYSCALL0 // SYSCALL0 must be last in built-in dictionary
+defvar "S0",2,,SZ
+defvar "BASE",4,,BASE,10
+</pre>
+</div>
+</div>
+</div>
 
-<p>
-/*
-        BUILT-IN CONSTANTS -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
-
+<div id="outline-container-org713b196" class="outline-2">
+<h2 id="org713b196"><span class="section-number-2">16</span> Built-In Constants</h2>
+<div class="outline-text-2" id="text-16">
 <p>
 It's also useful to expose a few constants to FORTH.  When the word is executed it pushes a
 constant value on the stack.
@@ -1794,135 +1761,116 @@ constant value on the stack.
 The built-in constants are:
 </p>
 
+<ul class="org-ul">
+<li><code>VERSION</code>         Is the current version of this FORTH.</li>
+<li><code>R0</code>              The address of the top of the return stack.</li>
+<li><code>DOCOL</code>           Pointer to DOCOL.</li>
+<li><code>F_IMMED</code>         The IMMEDIATE flag's actual value.</li>
+<li><code>F_HIDDEN</code>        The HIDDEN flag's actual value.</li>
+<li><code>F_LENMASK</code>       The length mask in the flags/len byte.</li>
+<li><code>SYS_*</code>           and the numeric codes of various Linux syscalls (from &lt;asm/unistd.h&gt;)</li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-asm">#include &lt;asm-i386/unistd.h&gt;
+
+	.macro defconst name, namelen, flags=0, label, value
+	defcode \name,\namelen,\flags,\label
+	push $\value
+	NEXT
+	.endm
+
+	defconst "VERSION",7,,VERSION,JONES_VERSION
+	defconst "R0",2,,RZ,return_stack_top
+	defconst "DOCOL",5,,__DOCOL,DOCOL
+	defconst "F_IMMED",7,,__F_IMMED,F_IMMED
+	defconst "F_HIDDEN",8,,__F_HIDDEN,F_HIDDEN
+	defconst "F_LENMASK",9,,__F_LENMASK,F_LENMASK
+
+	defconst "SYS_EXIT",8,,SYS_EXIT,__NR_exit
+	defconst "SYS_OPEN",8,,SYS_OPEN,__NR_open
+	defconst "SYS_CLOSE",9,,SYS_CLOSE,__NR_close
+	defconst "SYS_READ",8,,SYS_READ,__NR_read
+	defconst "SYS_WRITE",9,,SYS_WRITE,__NR_write
+	defconst "SYS_CREAT",9,,SYS_CREAT,__NR_creat
+	defconst "SYS_BRK",7,,SYS_BRK,__NR_brk
+
+	defconst "O_RDONLY",8,,__O_RDONLY,0
+	defconst "O_WRONLY",8,,__O_WRONLY,1
+	defconst "O_RDWR",6,,__O_RDWR,2
+	defconst "O_CREAT",7,,__O_CREAT,0100
+	defconst "O_EXCL",6,,__O_EXCL,0200
+	defconst "O_TRUNC",7,,__O_TRUNC,01000
+	defconst "O_APPEND",8,,__O_APPEND,02000
+	defconst "O_NONBLOCK",10,,__O_NONBLOCK,04000
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orged975fe" class="outline-2">
+<h2 id="orged975fe"><span class="section-number-2">17</span> Return Stack</h2>
+<div class="outline-text-2" id="text-17">
 <p>
-VERSION         Is the current version of this FORTH.
-R0              The address of the top of the return stack.
-DOCOL           Pointer to DOCOL.
-F<sub>IMMED</sub>         The IMMEDIATE flag's actual value.
-F<sub>HIDDEN</sub>        The HIDDEN flag's actual value.
-F<sub>LENMASK</sub>       The length mask in the flags/len byte.
+These words allow you to access the return stack.  Recall that the register %ebp always points to
+the top of the return stack.
 </p>
 
-<p>
-        SYS<sub>*</sub>           and the numeric codes of various Linux syscalls (from &lt;asm/unistd.h&gt;)
-*/
-</p>
 
-<p>
-<i>/#include &lt;asm-i386/unistd.h&gt;  /</i> you might need this instead
-#include &lt;asm/unistd.h&gt;
-</p>
-
-<p>
-.macro defconst name, namelen, flags=0, label, value
-defcode \name,\namelen,\flags,\label
-push $\value
+<div class="org-src-container">
+<pre class="src src-asm">defcode "&gt;R",2,,TOR
+pop %eax                // pop parameter stack into %eax
+PUSHRSP %eax            // push it on to the return stack
 NEXT
-.endm
-</p>
 
-<p>
-defconst "VERSION",7,,VERSION,JONES<sub>VERSION</sub>
-defconst "R0",2,,RZ,return<sub>stack</sub><sub>top</sub>
-defconst "DOCOL",5,,_<sub>DOCOL,DOCOL</sub>
-defconst "F<sub>IMMED</sub>",7,,_<sub>F</sub><sub>IMMED,F</sub><sub>IMMED</sub>
-defconst "F<sub>HIDDEN</sub>",8,,_<sub>F</sub><sub>HIDDEN,F</sub><sub>HIDDEN</sub>
-defconst "F<sub>LENMASK</sub>",9,,_<sub>F</sub><sub>LENMASK,F</sub><sub>LENMASK</sub>
-</p>
-
-<p>
-defconst "SYS<sub>EXIT</sub>",8,,SYS<sub>EXIT</sub>,_<sub>NR</sub><sub>exit</sub>
-defconst "SYS<sub>OPEN</sub>",8,,SYS<sub>OPEN</sub>,_<sub>NR</sub><sub>open</sub>
-defconst "SYS<sub>CLOSE</sub>",9,,SYS<sub>CLOSE</sub>,_<sub>NR</sub><sub>close</sub>
-defconst "SYS<sub>READ</sub>",8,,SYS<sub>READ</sub>,_<sub>NR</sub><sub>read</sub>
-defconst "SYS<sub>WRITE</sub>",9,,SYS<sub>WRITE</sub>,_<sub>NR</sub><sub>write</sub>
-defconst "SYS<sub>CREAT</sub>",9,,SYS<sub>CREAT</sub>,_<sub>NR</sub><sub>creat</sub>
-defconst "SYS<sub>BRK</sub>",7,,SYS<sub>BRK</sub>,_<sub>NR</sub><sub>brk</sub>
-</p>
-
-<p>
-defconst "O<sub>RDONLY</sub>",8,,_<sub>O</sub><sub>RDONLY,0</sub>
-defconst "O<sub>WRONLY</sub>",8,,_<sub>O</sub><sub>WRONLY,1</sub>
-defconst "O<sub>RDWR</sub>",6,,_<sub>O</sub><sub>RDWR,2</sub>
-defconst "O<sub>CREAT</sub>",7,,_<sub>O</sub><sub>CREAT,0100</sub>
-defconst "O<sub>EXCL</sub>",6,,_<sub>O</sub><sub>EXCL,0200</sub>
-defconst "O<sub>TRUNC</sub>",7,,_<sub>O</sub><sub>TRUNC,01000</sub>
-defconst "O<sub>APPEND</sub>",8,,_<sub>O</sub><sub>APPEND,02000</sub>
-defconst "O<sub>NONBLOCK</sub>",10,,_<sub>O</sub><sub>NONBLOCK,04000</sub>
-</p>
-
-<p>
-/*
-        RETURN STACK -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
-
-<p>
-        These words allow you to access the return stack.  Recall that the register %ebp always points to
-        the top of the return stack.
-*/
-</p>
-
-<p>
-defcode "&gt;R",2,,TOR
-pop %eax                <i>/ pop parameter stack into %eax
-PUSHRSP %eax            /</i> push it on to the return stack
-NEXT
-</p>
-
-<p>
 defcode "R&gt;",2,,FROMR
-POPRSP %eax             <i>/ pop return stack on to %eax
-push %eax               /</i> and push on to parameter stack
+POPRSP %eax             // pop return stack on to %eax
+push %eax               // and push on to parameter stack
 NEXT
-</p>
 
-<p>
 defcode "RSP@",4,,RSPFETCH
 push %ebp
 NEXT
-</p>
 
-<p>
 defcode "RSP!",4,,RSPSTORE
 pop %ebp
 NEXT
-</p>
 
-<p>
 defcode "RDROP",5,,RDROP
 addl $4,%ebp            // pop return stack and throw away
 NEXT
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org63509cd" class="outline-2">
+<h2 id="org63509cd"><span class="section-number-2">18</span> Parameter (Data) Stack</h2>
+<div class="outline-text-2" id="text-18">
+<p>
+These functions allow you to manipulate the parameter stack.  Recall that Linux sets up the parameter
+stack for us, and it is accessed through <code>%esp</code>.
 </p>
 
-<p>
-/*
-        PARAMETER (DATA) STACK -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
 
-<p>
-        These functions allow you to manipulate the parameter stack.  Recall that Linux sets up the parameter
-        stack for us, and it is accessed through %esp.
-*/
-</p>
-
-<p>
-defcode "DSP@",4,,DSPFETCH
+<div class="org-src-container">
+<pre class="src src-asm">defcode "DSP@",4,,DSPFETCH
 mov %esp,%eax
 push %eax
 NEXT
-</p>
 
-<p>
 defcode "DSP!",4,,DSPSTORE
 pop %esp
 NEXT
-</p>
+</pre>
+</div>
+</div>
+</div>
 
-<p>
-/*
-        INPUT AND OUTPUT -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
-
+<div id="outline-container-org6d31b5a" class="outline-2">
+<h2 id="org6d31b5a"><span class="section-number-2">19</span> Input and Output</h2>
+<div class="outline-text-2" id="text-19">
 <p>
 These are our first really meaty/complicated FORTH primitives.  I have chosen to write them in
 assembler, but surprisingly in "real" FORTH implementations these are often written in terms
@@ -1955,152 +1903,93 @@ it automatically.  The other thing that KEY does is if it detects that stdin has
 exits the program, which is why when you hit ^D the FORTH system cleanly exits.
 </p>
 
-<p>
+<pre class="example" id="org41ea4d6">
 buffer                           bufftop
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+   |                                |
+   V                                V
+   +-------------------------------+--------------------------------------+
+   | INPUT READ FROM STDIN ....... | unused part of the buffer            |
+   +-------------------------------+--------------------------------------+
+                     ^
+                     |
+                  currkey (next character to read)
+
+   &lt;---------------------- BUFFER_SIZE (4096 bytes) ----------------------&gt;
+</pre>
 
 
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">&#xa0;</td>
-</tr>
-</tbody>
-</table>
-<p>
-V                                V
-</p>
-<p>
-<del>-------------------------------</del>---------------------------------&#x2013;&#x2014;+
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">INPUT READ FROM STDIN &#x2026;&#x2026;.</td>
-<td class="org-left">unused part of the buffer</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>-------------------------------</del>---------------------------------&#x2013;&#x2014;+
-		  ^
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-currkey (next character to read)
-</p>
-
-<p>
-        &lt;-----------------&#x2013;&#x2014; BUFFER<sub>SIZE</sub> (4096 bytes) -----------------&#x2013;&#x2014;&gt;
-*/
-</p>
-
-<p>
-        defcode "KEY",3,,KEY
-        call _KEY
-        push %eax               // push return value on stack
-        NEXT
+<div class="org-src-container">
+<pre class="src src-asm">	defcode "KEY",3,,KEY
+	call _KEY
+	push %eax               // push return value on stack
+	NEXT
 _KEY:
-        mov (currkey),%ebx
-        cmp (bufftop),%ebx
-        jge 1f                  // exhausted the input buffer?
-        xor %eax,%eax
-        mov (%ebx),%al          // get next key from input buffer
-        inc %ebx
-        mov %ebx,(currkey)      // increment currkey
-        ret
-</p>
+	mov (currkey),%ebx
+	cmp (bufftop),%ebx
+	jge 1f                  // exhausted the input buffer?
+	xor %eax,%eax
+	mov (%ebx),%al          // get next key from input buffer
+	inc %ebx
+	mov %ebx,(currkey)      // increment currkey
+	ret
 
-<p>
-1:      <i>/ Out of input; use read(2) to fetch more input from stdin.
-        xor %ebx,%ebx           /</i> 1st param: stdin
-        mov $buffer,%ecx        // 2nd param: buffer
-        mov %ecx,currkey
-        mov $BUFFER<sub>SIZE</sub>,%edx   <i>/ 3rd param: max length
-        mov $_<sub>NR</sub><sub>read</sub>,%eax     /</i> syscall: read
-        int $0x80
-        test %eax,%eax          // If %eax &lt;= 0, then exit.
-        jbe 2f
-        addl %eax,%ecx          // buffer+%eax = bufftop
-        mov %ecx,bufftop
-        jmp _KEY
-</p>
+1:      // Out of input; use read(2) to fetch more input from stdin.
+	xor %ebx,%ebx           // 1st param: stdin
+	mov $buffer,%ecx        // 2nd param: buffer
+	mov %ecx,currkey
+	mov $BUFFER_SIZE,%edx   // 3rd param: max length
+	mov $__NR_read,%eax     // syscall: read
+	int $0x80
+	test %eax,%eax          // If %eax &lt;= 0, then exit.
+	jbe 2f
+	addl %eax,%ecx          // buffer+%eax = bufftop
+	mov %ecx,bufftop
+	jmp _KEY
 
-<p>
 2:      // Error or end of input: exit the program.
-        xor %ebx,%ebx
-        mov $_<sub>NR</sub><sub>exit</sub>,%eax     // syscall: exit
-        int $0x80
-</p>
+	xor %ebx,%ebx
+	mov $__NR_exit,%eax     // syscall: exit
+	int $0x80
 
-<p>
-        .data
-        .align 4
+	.data
+	.align 4
 currkey:
-        .int buffer             // Current place in input buffer (next character to read).
+	.int buffer             // Current place in input buffer (next character to read).
 bufftop:
-        .int buffer             // Last valid data in input buffer + 1.
-</p>
+	.int buffer             // Last valid data in input buffer + 1.
 
-<p>
 /*
-        By contrast, output is much simpler.  The FORTH word EMIT writes out a single byte to stdout.
-        This implementation just uses the write system call.  No attempt is made to buffer output, but
-        it would be a good exercise to add it.
+	By contrast, output is much simpler.  The FORTH word EMIT writes out a single byte to stdout.
+	This implementation just uses the write system call.  No attempt is made to buffer output, but
+	it would be a good exercise to add it.
 */
-</p>
 
-<p>
-        defcode "EMIT",4,,EMIT
-        pop %eax
-        call _EMIT
-        NEXT
+	defcode "EMIT",4,,EMIT
+	pop %eax
+	call _EMIT
+	NEXT
 _EMIT:
-        mov $1,%ebx             // 1st param: stdout
-</p>
+	mov $1,%ebx             // 1st param: stdout
+
+	// write needs the address of the byte to write
+	mov %al,emit_scratch
+	mov $emit_scratch,%ecx  // 2nd param: address
+
+	mov $1,%edx             // 3rd param: nbytes = 1
+
+	mov $__NR_write,%eax    // write syscall
+	int $0x80
+	ret
+
+	.data                   // NB: easier to fit in the .data section
+emit_scratch:
+	.space 1                // scratch used by EMIT
+</pre>
+</div>
+
 
 <p>
-// write needs the address of the byte to write
-mov %al,emit<sub>scratch</sub>
-mov $emit<sub>scratch</sub>,%ecx  // 2nd param: address
-</p>
-
-<p>
-mov $1,%edx             // 3rd param: nbytes = 1
-</p>
-
-<p>
-mov $_<sub>NR</sub><sub>write</sub>,%eax    // write syscall
-int $0x80
-ret
-</p>
-
-<p>
-        .data                   // NB: easier to fit in the .data section
-emit<sub>scratch</sub>:
-        .space 1                // scratch used by EMIT
-</p>
-
-<p>
-/*
-        Back to input, WORD is a FORTH word which reads the next full word of input.
+Back to input, WORD is a FORTH word which reads the next full word of input.
 </p>
 
 <p>
@@ -2139,70 +2028,61 @@ BAR WORD FOO ;
 </pre>
 
 <p>
-        is an error (or at least it doesn't do what you might expect).  Later we'll talk about compiling
-        and immediate mode, and you'll understand why.
-*/
+is an error (or at least it doesn't do what you might expect).  Later we'll talk about compiling
+and immediate mode, and you'll understand why.
 </p>
 
-<p>
-defcode "WORD",4,,WORD
-call _WORD
-push %edi               <i>/ push base address
-push %ecx               /</i> push length
-NEXT
-</p>
 
-<p>
+<div class="org-src-container">
+<pre class="src src-asm">	defcode "WORD",4,,WORD
+	call _WORD
+	push %edi               // push base address
+	push %ecx               // push length
+	NEXT
+
 _WORD:
-        <i>* Search for first non-blank character.  Also skip \ comments. *</i>
+	/* Search for first non-blank character.  Also skip \ comments. */
 1:
-        call _KEY               <i>/ get next key, returned in %eax
-        cmpb $'\\',%al          /</i> start of a comment?
-        je 3f                   // if so, skip the comment
-        cmpb $' ',%al
-        jbe 1b                  // if so, keep looking
-</p>
+	call _KEY               // get next key, returned in %eax
+	cmpb $'\\',%al          // start of a comment?
+	je 3f                   // if so, skip the comment
+	cmpb $' ',%al
+	jbe 1b                  // if so, keep looking
 
-<p>
-        <i>* Search for the end of the word, storing chars as we go. *</i>
-        mov $word<sub>buffer</sub>,%edi   // pointer to return buffer
+	/* Search for the end of the word, storing chars as we go. */
+	mov $word_buffer,%edi   // pointer to return buffer
 2:
-        stosb                   <i>/ add character to return buffer
-        call _KEY               /</i> get next key, returned in %al
-        cmpb $' ',%al           <i>/ is blank?
-        ja 2b                   /</i> if not, keep looping
-</p>
+	stosb                   // add character to return buffer
+	call _KEY               // get next key, returned in %al
+	cmpb $' ',%al           // is blank?
+	ja 2b                   // if not, keep looping
 
-<p>
-<i>* Return the word (well, the static buffer) and length. *</i>
-sub $word<sub>buffer</sub>,%edi
-mov %edi,%ecx           <i>/ return length of the word
-mov $word<sub>buffer</sub>,%edi   /</i> return address of the word
-ret
-</p>
+	/* Return the word (well, the static buffer) and length. */
+	sub $word_buffer,%edi
+	mov %edi,%ecx           // return length of the word
+	mov $word_buffer,%edi   // return address of the word
+	ret
 
-<p>
-        <i>* Code to skip \ comments to end of the current line. *</i>
+	/* Code to skip \ comments to end of the current line. */
 3:
-        call _KEY
-        cmpb $'\n',%al          // end of line yet?
-        jne 3b
-        jmp 1b
-</p>
+	call _KEY
+	cmpb $'\n',%al          // end of line yet?
+	jne 3b
+	jmp 1b
+
+	.data                   // NB: easier to fit in the .data section
+	// A static buffer where WORD returns.  Subsequent calls
+	// overwrite this buffer.  Maximum word length is 32 chars.
+word_buffer:
+	.space 32
+</pre>
+</div>
+
 
 <p>
-        .data                   <i>/ NB: easier to fit in the .data section
-        /</i> A static buffer where WORD returns.  Subsequent calls
-        // overwrite this buffer.  Maximum word length is 32 chars.
-word<sub>buffer</sub>:
-        .space 32
-</p>
-
-<p>
-/*
-        As well as reading in words we'll need to read in numbers and for that we are using a function
-        called NUMBER.  This parses a numeric string such as one returned by WORD and pushes the
-        number on the parameter stack.
+As well as reading in words we'll need to read in numbers and for that we are using a function
+called NUMBER.  This parses a numeric string such as one returned by WORD and pushes the
+number on the parameter stack.
 </p>
 
 <p>
@@ -2215,99 +2095,83 @@ If the word starts with a '-' character then the returned value is negative.
 </p>
 
 <p>
-        If the string can't be parsed as a number (or contains characters outside the current BASE)
-        then we need to return an error indication.  So NUMBER actually returns two items on the stack.
-        At the top of stack we return the number of unconverted characters (ie. if 0 then all characters
-        were converted, so there is no error).  Second from top of stack is the parsed number or a
-        partial value if there was an error.
-*/
-        defcode "NUMBER",6,,NUMBER
-        pop %ecx                <i>/ length of string
-        pop %edi                /</i> start address of string
-        call _NUMBER
-        push %eax               <i>/ parsed number
-        push %ecx               /</i> number of unparsed characters (0 = no error)
-        NEXT
+If the string can't be parsed as a number (or contains characters outside the current BASE)
+then we need to return an error indication.  So NUMBER actually returns two items on the stack.
+At the top of stack we return the number of unconverted characters (ie. if 0 then all characters
+were converted, so there is no error).  Second from top of stack is the parsed number or a
+partial value if there was an error.
 </p>
 
-<p>
+<div class="org-src-container">
+<pre class="src src-asm">	defcode "NUMBER",6,,NUMBER
+	pop %ecx                // length of string
+	pop %edi                // start address of string
+	call _NUMBER
+	push %eax               // parsed number
+	push %ecx               // number of unparsed characters (0 = no error)
+	NEXT
+
 _NUMBER:
-        xor %eax,%eax
-        xor %ebx,%ebx
-</p>
+	xor %eax,%eax
+	xor %ebx,%ebx
 
-<p>
-test %ecx,%ecx          // trying to parse a zero-length string is an error, but will return 0.
-jz 5f
-</p>
+	test %ecx,%ecx          // trying to parse a zero-length string is an error, but will return 0.
+	jz 5f
 
-<p>
-movl var<sub>BASE</sub>,%edx      // get BASE (in %dl)
-</p>
+	movl var_BASE,%edx      // get BASE (in %dl)
 
-<p>
-<i>/ Check if first character is '-'.
-movb (%edi),%bl         /</i> %bl = first character in string
-inc %edi
-push %eax               <i>/ push 0 on stack
-cmpb $'-',%bl           /</i> negative number?
-jnz 2f
-pop %eax
-push %ebx               // push &lt;&gt; 0 on stack, indicating negative
-dec %ecx
-jnz 1f
-pop %ebx                // error: string is only '-'.
-movl $1,%ecx
-ret
-</p>
+	// Check if first character is '-'.
+	movb (%edi),%bl         // %bl = first character in string
+	inc %edi
+	push %eax               // push 0 on stack
+	cmpb $'-',%bl           // negative number?
+	jnz 2f
+	pop %eax
+	push %ebx               // push &lt;&gt; 0 on stack, indicating negative
+	dec %ecx
+	jnz 1f
+	pop %ebx                // error: string is only '-'.
+	movl $1,%ecx
+	ret
 
-<p>
-        <i>/ Loop reading digits.
-1:      imull %edx,%eax         /</i> %eax *= BASE
-        movb (%edi),%bl         // %bl = next character in string
-        inc %edi
-</p>
+	// Loop reading digits.
+1:      imull %edx,%eax         // %eax *= BASE
+	movb (%edi),%bl         // %bl = next character in string
+	inc %edi
 
-<p>
-        <i>/ Convert 0-9, A-Z to a number 0-35.
-2:      subb $'0',%bl           /</i> &lt; '0'?
-        jb 4f
-        cmp $10,%bl             // &lt;= '9'?
-        jb 3f
-        subb $17,%bl            // &lt; 'A'? (17 is 'A'-'0')
-        jb 4f
-        addb $10,%bl
-</p>
+	// Convert 0-9, A-Z to a number 0-35.
+2:      subb $'0',%bl           // &lt; '0'?
+	jb 4f
+	cmp $10,%bl             // &lt;= '9'?
+	jb 3f
+	subb $17,%bl            // &lt; 'A'? (17 is 'A'-'0')
+	jb 4f
+	addb $10,%bl
 
-<p>
 3:      cmp %dl,%bl             // &gt;= BASE?
-        jge 4f
-</p>
+	jge 4f
 
-<p>
-// OK, so add it to %eax and loop.
-add %ebx,%eax
-dec %ecx
-jnz 1b
-</p>
+	// OK, so add it to %eax and loop.
+	add %ebx,%eax
+	dec %ecx
+	jnz 1b
 
-<p>
-        // Negate the result if first character was '-' (saved on the stack).
+	// Negate the result if first character was '-' (saved on the stack).
 4:      pop %ebx
-        test %ebx,%ebx
-        jz 5f
-        neg %eax
-</p>
+	test %ebx,%ebx
+	jz 5f
+	neg %eax
 
-<p>
 5:      ret
-</p>
+</pre>
+</div>
+</div>
+</div>
 
-<p>
-/*
-        DICTIONARY LOOK UPS -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
 
+<div id="outline-container-org0d31f54" class="outline-2">
+<h2 id="org0d31f54"><span class="section-number-2">20</span> Dictionary Look Ups</h2>
+<div class="outline-text-2" id="text-20">
 <p>
 We're building up to our prelude on how FORTH code is compiled, but first we need yet more infrastructure.
 </p>
@@ -2322,242 +2186,96 @@ or 0 if it didn't.
 So if DOUBLE is defined in the dictionary, then WORD DOUBLE FIND returns the following pointer:
 </p>
 
-<p>
+<pre class="example" id="org6dba636">
 pointer to this
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-V
-</p>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>------------<del>------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-<td class="org-left">DOCOL</td>
-<td class="org-left">DUP</td>
-<td class="org-left">+</td>
-<td class="org-left">EXIT</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>------------<del>------------</del>
-</p>
+    |
+    |
+    V
+    +---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+    | LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          | EXIT       |
+    +---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+</pre>
 
 <p>
 See also &gt;CFA and &gt;DFA.
 </p>
 
 <p>
-        FIND doesn't find dictionary entries which are flagged as HIDDEN.  See below for why.
-*/
+FIND doesn't find dictionary entries which are flagged as HIDDEN.  See below for why.
 </p>
 
-<p>
-defcode "FIND",4,,FIND
-pop %ecx                <i>/ %ecx = length
-pop %edi                /</i> %edi = address
-call _FIND
-push %eax               // %eax = address of dictionary entry (or NULL)
-NEXT
-</p>
 
-<p>
+<div class="org-src-container">
+<pre class="src src-asm">	defcode "FIND",4,,FIND
+	pop %ecx                // %ecx = length
+	pop %edi                // %edi = address
+	call _FIND
+	push %eax               // %eax = address of dictionary entry (or NULL)
+	NEXT
+
 _FIND:
-        push %esi               // Save %esi so we can use it in string comparison.
-</p>
+	push %esi               // Save %esi so we can use it in string comparison.
 
-<p>
-        <i>/ Now we start searching backwards through the dictionary for this word.
-        mov var<sub>LATEST</sub>,%edx     /</i> LATEST points to name header of the latest word in the dictionary
+	// Now we start searching backwards through the dictionary for this word.
+	mov var_LATEST,%edx     // LATEST points to name header of the latest word in the dictionary
 1:      test %edx,%edx          // NULL pointer?  (end of the linked list)
-        je 4f
-</p>
+	je 4f
 
-<p>
-<i>/ Compare the length expected and the length of the word.
-/</i> Note that if the F<sub>HIDDEN</sub> flag is set on the word, then by a bit of trickery
-// this won't pick the word (the length will appear to be wrong).
-xor %eax,%eax
-movb 4(%edx),%al        <i>/ %al = flags+length field
-andb $(F<sub>HIDDEN</sub>|F<sub>LENMASK</sub>),%al /</i> %al = name length
-cmpb %cl,%al            // Length is the same?
-jne 2f
-</p>
+	// Compare the length expected and the length of the word.
+	// Note that if the F_HIDDEN flag is set on the word, then by a bit of trickery
+	// this won't pick the word (the length will appear to be wrong).
+	xor %eax,%eax
+	movb 4(%edx),%al        // %al = flags+length field
+	andb $(F_HIDDEN|F_LENMASK),%al // %al = name length
+	cmpb %cl,%al            // Length is the same?
+	jne 2f
 
-<p>
-<i>/ Compare the strings in detail.
-push %ecx               /</i> Save the length
-push %edi               <i>/ Save the address (repe cmpsb will move this pointer)
-lea 5(%edx),%esi        /</i> Dictionary string we are checking against.
-repe cmpsb              // Compare the strings.
-pop %edi
-pop %ecx
-jne 2f                  // Not the same.
-</p>
+	// Compare the strings in detail.
+	push %ecx               // Save the length
+	push %edi               // Save the address (repe cmpsb will move this pointer)
+	lea 5(%edx),%esi        // Dictionary string we are checking against.
+	repe cmpsb              // Compare the strings.
+	pop %edi
+	pop %ecx
+	jne 2f                  // Not the same.
 
-<p>
-// The strings are the same - return the header pointer in %eax
-pop %esi
-mov %edx,%eax
-ret
-</p>
+	// The strings are the same - return the header pointer in %eax
+	pop %esi
+	mov %edx,%eax
+	ret
 
-<p>
-2:      mov (%edx),%edx         <i>/ Move back through the link field to the previous word
-        jmp 1b                  /</i> .. and loop.
-</p>
+2:      mov (%edx),%edx         // Move back through the link field to the previous word
+	jmp 1b                  // .. and loop.
 
-<p>
 4:      // Not found.
-        pop %esi
-        xor %eax,%eax           // Return zero to indicate not found.
-        ret
-</p>
+	pop %esi
+	xor %eax,%eax           // Return zero to indicate not found.
+	ret
+</pre>
+</div>
 
 <p>
-/*
-        FIND returns the dictionary pointer, but when compiling we need the codeword pointer (recall
-        that FORTH definitions are compiled into lists of codeword pointers).  The standard FORTH
-        word &gt;CFA turns a dictionary pointer into a codeword pointer.
+FIND returns the dictionary pointer, but when compiling we need the codeword pointer (recall
+that FORTH definitions are compiled into lists of codeword pointers).  The standard FORTH
+word &gt;CFA turns a dictionary pointer into a codeword pointer.
 </p>
 
 <p>
 The example below shows the result of:
 </p>
 
-<p>
-WORD DOUBLE FIND &gt;CFA
-</p>
+<pre class="example" id="org552904d">
+        WORD DOUBLE FIND &gt;CFA
 
-<p>
 FIND returns a pointer to this
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">&gt;CFA converts it to a pointer to this</td>
-</tr>
-
-<tr>
-<td class="org-left">&#xa0;</td>
-</tr>
-</tbody>
-</table>
-<p>
+|                               &gt;CFA converts it to a pointer to this
+|                                          |
 V                                          V
-</p>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>------------<del>------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-<td class="org-left">DOCOL</td>
-<td class="org-left">DUP</td>
-<td class="org-left">+</td>
-<td class="org-left">EXIT</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>------------<del>------------</del>
-					   codeword
-</p>
++---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+| LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          | EXIT       |
++---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+                                           codeword
+</pre>
 
 <p>
 Notes:
@@ -2576,121 +2294,46 @@ quickly.
 </p>
 
 <p>
-        What does CFA stand for?  My best guess is "Code Field Address".
-*/
+What does CFA stand for?  My best guess is "Code Field Address".
 </p>
 
-<p>
-        defcode "&gt;CFA",4,,TCFA
-        pop %edi
-        call _TCFA
-        push %edi
-        NEXT
+
+<div class="org-src-container">
+<pre class="src src-asm">	defcode "&gt;CFA",4,,TCFA
+	pop %edi
+	call _TCFA
+	push %edi
+	NEXT
 _TCFA:
-        xor %eax,%eax
-        add $4,%edi             <i>/ Skip link pointer.
-        movb (%edi),%al         /</i> Load flags+len into %al.
-        inc %edi                <i>/ Skip flags+len byte.
-        andb $F<sub>LENMASK</sub>,%al     /</i> Just the length, not the flags.
-        add %eax,%edi           <i>/ Skip the name.
-        addl $3,%edi            /</i> The codeword is 4-byte aligned.
-        andl $~3,%edi
-        ret
-</p>
+	xor %eax,%eax
+	add $4,%edi             // Skip link pointer.
+	movb (%edi),%al         // Load flags+len into %al.
+	inc %edi                // Skip flags+len byte.
+	andb $F_LENMASK,%al     // Just the length, not the flags.
+	add %eax,%edi           // Skip the name.
+	addl $3,%edi            // The codeword is 4-byte aligned.
+	andl $~3,%edi
+	ret
+</pre>
+</div>
 
 <p>
-/*
-        Related to &gt;CFA is &gt;DFA which takes a dictionary entry address as returned by FIND and
-        returns a pointer to the first data field.
+Related to &gt;CFA is &gt;DFA which takes a dictionary entry address as returned by FIND and
+returns a pointer to the first data field.
 </p>
 
-<p>
+<pre class="example" id="org6c512c7">
 FIND returns a pointer to this
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">&gt;CFA converts it to a pointer to this</td>
-</tr>
-
-<tr>
-<td class="org-left">&#xa0;</td>
-</tr>
-
-<tr>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">&gt;DFA converts it to a pointer to this</td>
-</tr>
-
-<tr>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">&#xa0;</td>
-</tr>
-</tbody>
-</table>
-<p>
+|                               &gt;CFA converts it to a pointer to this
+|                                          |
+|                                          |    &gt;DFA converts it to a pointer to this
+|                                          |             |
 V                                          V             V
-</p>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>------------<del>------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-<td class="org-left">DOCOL</td>
-<td class="org-left">DUP</td>
-<td class="org-left">+</td>
-<td class="org-left">EXIT</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>------------<del>------------</del>
-					   codeword
-</p>
++---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+| LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          | EXIT       |
++---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+                                           codeword
+</pre>
 
 <p>
 (Note to those following the source of FIG-FORTH / ciforth: My &gt;DFA definition is
@@ -2698,117 +2341,47 @@ different from theirs, because they have an extra indirection).
 </p>
 
 <p>
-        You can see that &gt;DFA is easily defined in FORTH just by adding 4 to the result of &gt;CFA.
-*/
+You can see that &gt;DFA is easily defined in FORTH just by adding 4 to the result of &gt;CFA.
 </p>
 
-<p>
-defword "&gt;DFA",4,,TDFA
-.int TCFA               <i>/ &gt;CFA         (get code field address)
-.int INCR4              /</i> 4+           (add 4 to it to get to next word)
+
+<div class="org-src-container">
+<pre class="src src-asm">defword "&gt;DFA",4,,TDFA
+.int TCFA               // &gt;CFA         (get code field address)
+.int INCR4              // 4+           (add 4 to it to get to next word)
 .int EXIT               // EXIT         (return from FORTH word)
-</p>
+</pre>
+</div>
+</div>
+</div>
 
-<p>
-/*
-        COMPILING -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
 
+<div id="outline-container-org81c32ab" class="outline-2">
+<h2 id="org81c32ab"><span class="section-number-2">21</span> Compiling</h2>
+<div class="outline-text-2" id="text-21">
 <p>
 Now we'll talk about how FORTH compiles words.  Recall that a word definition looks like this:
 </p>
 
-<pre class="example">
-DOUBLE DUP + ;
+<pre class="example" id="org86a85b4">
+: DOUBLE DUP + ;
 </pre>
-
 
 <p>
 and we have to turn this into:
 </p>
 
-<p>
-pointer to previous word
- ^
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-<del>&#x2013;|------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>------------<del>------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-<td class="org-left">DOCOL</td>
-<td class="org-left">DUP</td>
-<td class="org-left">+</td>
-<td class="org-left">EXIT</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>&#x2013;|---------</del>------------<del>------------</del>
+<pre class="example" id="orgb4829e7">
+  pointer to previous word
+   ^
+   |
++--|------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+| LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          | EXIT       |
++---------+---+---+---+---+---+---+---+---+------------+--|---------+------------+------------+
    ^       len                         pad  codeword      |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">V</td>
-</tr>
-</tbody>
-</table>
-<p>
-LATEST points here                            points to codeword of DUP
-</p>
+   |                                                      V
+  LATEST points here                            points to codeword of DUP
+</pre>
 
 <p>
 There are several problems to solve.  Where to put the new word?  How do we read words?  How
@@ -2853,68 +2426,15 @@ So you may be able to see how we could define : (COLON).  The general plan is:
 (2) Construct the dictionary entry &#x2013; just the header part &#x2013; in user memory:
 </p>
 
-<p>
-pointer to previous word (from LATEST)                      +&#x2013; Afterwards, HERE points here, where
+<pre class="example" id="org0728e4e">
+pointer to previous word (from LATEST)                      +-- Afterwards, HERE points here, where
        ^                                                    |   the interpreter will start appending
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">V   codewords.</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>&#x2013;|------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>-------&#x2013;&#x2014;+
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-<td class="org-left">DOCOL</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>-------&#x2013;&#x2014;+
-	   len                         pad  codeword
-</p>
+       |                                                    V   codewords.
+    +--|------+---+---+---+---+---+---+---+---+------------+
+    | LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      |
+    +---------+---+---+---+---+---+---+---+---+------------+
+               len                         pad  codeword
+</pre>
 
 <p>
 (3) Set LATEST to point to the newly defined word, &#x2026;
@@ -2934,164 +2454,37 @@ pointer to previous word (from LATEST)                      +&#x2013; Afterwards
 After : has run, our input is here:
 </p>
 
-<pre class="example">
-DOUBLE DUP + ;
+<pre class="example" id="orge7891bd">
+: DOUBLE DUP + ;
+         ^
+         |
+        Next byte returned by KEY will be the 'D' character of DUP
 </pre>
-
-<p>
-^
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-Next byte returned by KEY will be the 'D' character of DUP
-</p>
 
 <p>
 so the interpreter (now it's in compile mode, so I guess it's really the compiler) reads "DUP",
 looks it up in the dictionary, gets its codeword pointer, and appends it:
 </p>
 
-<p>
-+&#x2013; HERE updated to point here.
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<pre class="example" id="org62ebfde">
+                                                                     +-- HERE updated to point here.
+                                                                     |
+                                                                     V
++---------+---+---+---+---+---+---+---+---+------------+------------+
+| LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        |
++---------+---+---+---+---+---+---+---+---+------------+------------+
+           len                         pad  codeword
 
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-V
-</p>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-<td class="org-left">DOCOL</td>
-<td class="org-left">DUP</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>
-	   len                         pad  codeword
-</p>
-
-<p>
 Next we read +, get the codeword pointer, and append it:
-</p>
 
-<p>
-+&#x2013; HERE updated to point here.
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-V
-</p>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>-------&#x2013;&#x2014;+
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-<td class="org-left">DOCOL</td>
-<td class="org-left">DUP</td>
-<td class="org-left">+</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>-------&#x2013;&#x2014;+
-	   len                         pad  codeword
-</p>
+                                                                                  +-- HERE updated to point here.
+                                                                                  |
+                                                                                  V
++---------+---+---+---+---+---+---+---+---+------------+------------+------------+
+| LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          |
++---------+---+---+---+---+---+---+---+---+------------+------------+------------+
+           len                         pad  codeword
+</pre>
 
 <p>
 The issue is what happens next.  Obviously what we <span class="underline">don't</span> want to happen is that we
@@ -3119,71 +2512,15 @@ of ; and we'll see that it's really a very simple definition, declared IMMEDIATE
 After the interpreter reads ; and executes it 'immediately', we get this:
 </p>
 
+<pre class="example" id="orgd87c6a8">
++---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+| LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          | EXIT       |
++---------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+           len                         pad  codeword                                           ^
+                                                                                               |
+                                                                                              HERE
+</pre>
 <p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>------------<del>------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-<td class="org-left">DOCOL</td>
-<td class="org-left">DUP</td>
-<td class="org-left">+</td>
-<td class="org-left">EXIT</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>------------<del>------------</del>
-	   len                         pad  codeword                                           ^
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-											      HERE
 STATE is set to 0.
 </p>
 
@@ -3207,178 +2544,72 @@ going to define them.  The : (COLON) function can be made a little bit more gene
 it in two parts.  The first part, called CREATE, makes just the header:
 </p>
 
-<p>
-+&#x2013; Afterwards, HERE points here.
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-V
-</p>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>
-	   len                         pad
-</p>
+<pre class="example" id="org8bd0b52">
+                                           +-- Afterwards, HERE points here.
+                                           |
+                                           V
++---------+---+---+---+---+---+---+---+---+
+| LINK    | 6 | D | O | U | B | L | E | 0 |
++---------+---+---+---+---+---+---+---+---+
+           len                         pad
+</pre>
 
 <p>
 and the second part, the actual definition of : (COLON), calls CREATE and appends the
 DOCOL codeword, so leaving:
 </p>
 
+<pre class="example" id="orgd2092db">
+                                                        +-- Afterwards, HERE points here.
+                                                        |
+                                                        V
++---------+---+---+---+---+---+---+---+---+------------+
+| LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      |
++---------+---+---+---+---+---+---+---+---+------------+
+           len                         pad  codeword
+</pre>
+
 <p>
-+&#x2013; Afterwards, HERE points here.
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-V
-</p>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>-------&#x2013;&#x2014;+
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-<td class="org-left">DOCOL</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>-------&#x2013;&#x2014;+
-	   len                         pad  codeword
+CREATE is a standard FORTH word and the advantage of this split is that we can reuse it to
+create other types of words (not just ones which contain code, but words which contain variables,
+constants and other data).
 </p>
 
-<p>
-        CREATE is a standard FORTH word and the advantage of this split is that we can reuse it to
-        create other types of words (not just ones which contain code, but words which contain variables,
-        constants and other data).
-*/
-</p>
 
-<p>
-defcode "CREATE",6,,CREATE
-</p>
+<div class="org-src-container">
+<pre class="src src-asm">defcode "CREATE",6,,CREATE
 
-<p>
-<i>/ Get the name length and address.
-pop %ecx                /</i> %ecx = length
+// Get the name length and address.
+pop %ecx                // %ecx = length
 pop %ebx                // %ebx = address of name
-</p>
 
-<p>
-<i>/ Link pointer.
-movl var<sub>HERE</sub>,%edi      /</i> %edi is the address of the header
-movl var<sub>LATEST</sub>,%eax    <i>/ Get link pointer
-stosl                   /</i> and store it in the header.
-</p>
+// Link pointer.
+movl var_HERE,%edi      // %edi is the address of the header
+movl var_LATEST,%eax    // Get link pointer
+stosl                   // and store it in the header.
 
-<p>
-<i>/ Length byte and the word itself.
-mov %cl,%al             /</i> Get the length.
+// Length byte and the word itself.
+mov %cl,%al             // Get the length.
 stosb                   // Store the length/flags byte.
 push %esi
-mov %ebx,%esi           <i>/ %esi = word
-rep movsb               /</i> Copy the word
+mov %ebx,%esi           // %esi = word
+rep movsb               // Copy the word
 pop %esi
 addl $3,%edi            // Align to next 4 byte boundary.
 andl $~3,%edi
-</p>
 
-<p>
 // Update LATEST and HERE.
-movl var<sub>HERE</sub>,%eax
-movl %eax,var<sub>LATEST</sub>
-movl %edi,var<sub>HERE</sub>
+movl var_HERE,%eax
+movl %eax,var_LATEST
+movl %edi,var_HERE
 NEXT
-</p>
+</pre>
+</div>
+
 
 <p>
-/*
-        Because I want to define : (COLON) in FORTH, not assembler, we need a few more FORTH words
-        to use.
+Because I want to define : (COLON) in FORTH, not assembler, we need a few more FORTH words
+to use.
 </p>
 
 <p>
@@ -3386,104 +2617,43 @@ The first is , (COMMA) which is a standard FORTH word which appends a 32 bit int
 memory pointed to by HERE, and adds 4 to HERE.  So the action of , (COMMA) is:
 </p>
 
-<p>
-previous value of HERE
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-							 V
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>&#x2013; - - - - --<del>------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">&lt;data&gt;</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>&#x2013; - - - - --<del>------------</del>
-	   len                         pad                            ^
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-new value of HERE
-</p>
+<pre class="example" id="orgc1abd56">
+                                                previous value of HERE
+                                                         |
+                                                         V
++---------+---+---+---+---+---+---+---+---+-- - - - - --+------------+
+| LINK    | 6 | D | O | U | B | L | E | 0 |             |  &lt;data&gt;    |
++---------+---+---+---+---+---+---+---+---+-- - - - - --+------------+
+           len                         pad                            ^
+                                                                      |
+                                                                new value of HERE
+</pre>
 
 <p>
 and &lt;data&gt; is whatever 32 bit integer was at the top of the stack.
 </p>
 
 <p>
-        , (COMMA) is quite a fundamental operation when compiling.  It is used to append codewords
-        to the current word that is being compiled.
-*/
+, (COMMA) is quite a fundamental operation when compiling.  It is used to append codewords
+to the current word that is being compiled.
 </p>
 
-<p>
-        defcode ",",1,,COMMA
-        pop %eax                // Code pointer to store.
-        call _COMMA
-        NEXT
+
+<div class="org-src-container">
+<pre class="src src-asm">	defcode ",",1,,COMMA
+	pop %eax                // Code pointer to store.
+	call _COMMA
+	NEXT
 _COMMA:
-        movl var<sub>HERE</sub>,%edi      <i>/ HERE
-        stosl                   /</i> Store it.
-        movl %edi,var<sub>HERE</sub>      // Update HERE (incremented)
-        ret
-</p>
+	movl var_HERE,%edi      // HERE
+	stosl                   // Store it.
+	movl %edi,var_HERE      // Update HERE (incremented)
+	ret
+</pre>
+</div>
 
 <p>
-/*
-        Our definitions of : (COLON) and ; (SEMICOLON) will need to switch to and from compile mode.
+Our definitions of : (COLON) and ; (SEMICOLON) will need to switch to and from compile mode.
 </p>
 
 <p>
@@ -4242,7 +3412,7 @@ jonesforth.f
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Guido Bartolucci</p>
-<p class="date">Created: 2022-04-06 Wed 23:07</p>
+<p class="date">Created: 2022-04-06 Wed 23:31</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
