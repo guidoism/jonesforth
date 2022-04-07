@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2022-04-06 Wed 22:36 -->
+<!-- 2022-04-06 Wed 23:07 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -244,14 +244,19 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org0ca65f4">1. Introduction</a></li>
-<li><a href="#org2f79673">2. Acknowledgements</a></li>
-<li><a href="#org1377844">3. Public Domain</a></li>
-<li><a href="#org9acb3c0">4. Assembling</a></li>
-<li><a href="#org4ccdfcb">5. Assembler</a></li>
-<li><a href="#orgbc7d960">6. The Dictionary</a></li>
-<li><a href="#orgf195173">7. Direct Threaded Code</a></li>
-<li><a href="#orgacc3086">8. Indirect Threaded Code</a></li>
+<li><a href="#orgc909375">1. Introduction</a></li>
+<li><a href="#org4b01451">2. Acknowledgements</a></li>
+<li><a href="#org61c14e3">3. Public Domain</a></li>
+<li><a href="#org67adc79">4. Assembling</a></li>
+<li><a href="#orga2cc47b">5. Assembler</a></li>
+<li><a href="#org3edecde">6. The Dictionary</a></li>
+<li><a href="#org3bb235c">7. Direct Threaded Code</a></li>
+<li><a href="#orgf7e675b">8. Indirect Threaded Code</a></li>
+<li><a href="#org7bea64e">9. The Interpreter and Return Stack</a></li>
+<li><a href="#org32f1cc7">10. Starting Up</a></li>
+<li><a href="#org3a0b01e">11. Built-In Words</a></li>
+<li><a href="#orgad395af">12. Returning From Forth Words</a></li>
+<li><a href="#orgb7fd272">13. Literals</a></li>
 </ul>
 </div>
 </div>
@@ -275,8 +280,8 @@ Taken from jonesforth.S,v 1.47 2009-09-11 08:33:13 rich Exp
 </pre>
 </div>
 
-<div id="outline-container-org0ca65f4" class="outline-2">
-<h2 id="org0ca65f4"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-orgc909375" class="outline-2">
+<h2 id="orgc909375"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 FORTH is one of those alien languages which most working programmers regard in the same
@@ -367,8 +372,8 @@ Discussion and criticism of this FORTH here: <a href="http://lambda-the-ultimate
 </div>
 </div>
 
-<div id="outline-container-org2f79673" class="outline-2">
-<h2 id="org2f79673"><span class="section-number-2">2</span> Acknowledgements</h2>
+<div id="outline-container-org4b01451" class="outline-2">
+<h2 id="org4b01451"><span class="section-number-2">2</span> Acknowledgements</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This code draws heavily on the design of LINA FORTH (<a href="http://home.hccnet.nl/a.w.m.van.der.horst/lina.html">http://home.hccnet.nl/a.w.m.van.der.horst/lina.html</a>)
@@ -390,8 +395,8 @@ original program which I still have on original cassette tape kept nagging away 
 </div>
 </div>
 
-<div id="outline-container-org1377844" class="outline-2">
-<h2 id="org1377844"><span class="section-number-2">3</span> Public Domain</h2>
+<div id="outline-container-org61c14e3" class="outline-2">
+<h2 id="org61c14e3"><span class="section-number-2">3</span> Public Domain</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 I, the copyright holder of this work, hereby release it into the public domain. This applies worldwide.
@@ -404,8 +409,8 @@ without any conditions, unless such conditions are required by law.
 </div>
 </div>
 
-<div id="outline-container-org9acb3c0" class="outline-2">
-<h2 id="org9acb3c0"><span class="section-number-2">4</span> Assembling</h2>
+<div id="outline-container-org67adc79" class="outline-2">
+<h2 id="org67adc79"><span class="section-number-2">4</span> Assembling</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 If you want to actually run this FORTH, rather than just read it, you will need Linux on an
@@ -446,8 +451,8 @@ cat jonesforth.f myfunctions.f - | ./jonesforth
 </div>
 </div>
 
-<div id="outline-container-org4ccdfcb" class="outline-2">
-<h2 id="org4ccdfcb"><span class="section-number-2">5</span> Assembler</h2>
+<div id="outline-container-orga2cc47b" class="outline-2">
+<h2 id="orga2cc47b"><span class="section-number-2">5</span> Assembler</h2>
 <div class="outline-text-2" id="text-5">
 <p>
 (You can just skip to the next section &#x2013; you don't need to be able to read assembler to
@@ -491,8 +496,8 @@ Now the tutorial starts in earnest.
 </div>
 </div>
 
-<div id="outline-container-orgbc7d960" class="outline-2">
-<h2 id="orgbc7d960"><span class="section-number-2">6</span> The Dictionary</h2>
+<div id="outline-container-org3edecde" class="outline-2">
+<h2 id="org3edecde"><span class="section-number-2">6</span> The Dictionary</h2>
 <div class="outline-text-2" id="text-6">
 <p>
 In FORTH as you will know, functions are called "words", and just as in other languages they
@@ -510,7 +515,7 @@ Words, both built-in ones and ones which the programmer defines later, are store
 which is just a linked list of dictionary entries.
 </p>
 
-<pre class="example" id="org35b0906">
+<pre class="example" id="org144a8cb">
 &lt;--- DICTIONARY ENTRY (HEADER) -----------------------&gt;
 +------------------------+--------+---------- - - - - +----------- - - - -
 | LINK POINTER           | LENGTH/| NAME              | DEFINITION
@@ -537,7 +542,7 @@ other words, the head of this linked list.
 DOUBLE and QUADRUPLE might look like this:
 </p>
 
-<pre class="example" id="orgab51451">
+<pre class="example" id="orgfda0fa3">
   pointer to previous word
    ^
    |
@@ -576,8 +581,8 @@ the old definition.  Only words defined after the new definition use the new def
 </div>
 </div>
 
-<div id="outline-container-orgf195173" class="outline-2">
-<h2 id="orgf195173"><span class="section-number-2">7</span> Direct Threaded Code</h2>
+<div id="outline-container-org3bb235c" class="outline-2">
+<h2 id="org3bb235c"><span class="section-number-2">7</span> Direct Threaded Code</h2>
 <div class="outline-text-2" id="text-7">
 <p>
 Now we'll get to the really crucial bit in understanding FORTH, so go and get a cup of tea
@@ -593,7 +598,7 @@ you are only allowed to call functions without arguments.  (Don't worry for now 
 language would be completely useless!)  So in our peculiar C, code would look like this:
 </p>
 
-<pre class="example" id="org73b5510">
+<pre class="example" id="orge7f1157">
 f ()
 {
   a ();
@@ -608,7 +613,7 @@ Probably into assembly code like this.  On the right hand side I've written the 
 i386 machine code.
 </p>
 
-<pre class="example" id="org2cfcc3a">
+<pre class="example" id="orgdae5939">
 f:
   CALL a                        E8 08 00 00 00
   CALL b                        E8 1C 00 00 00
@@ -623,7 +628,7 @@ by the repeated "E8" bytes.  We can save 20% in code size (and therefore, in exp
 by compressing this into just:
 </p>
 
-<pre class="example" id="org3014160">
+<pre class="example" id="org4ea9125">
 08 00 00 00             Just the function addresses, without
 1C 00 00 00             the CALL prefix.
 2C 00 00 00
@@ -652,7 +657,7 @@ two assembly instructions which turn into just 3 bytes of machine code.  Let's s
 pointer to the next word to execute in the <code>%esi</code> register:
 </p>
 
-<pre class="example" id="org9d02022">
+<pre class="example" id="orgb5ac6e1">
         08 00 00 00     &lt;- We're executing this one now.  %esi is the _next_ one to execute.
 %esi -&gt; 1C 00 00 00
         2C 00 00 00
@@ -664,7 +669,7 @@ two things.  Firstly it reads the memory at %esi into the accumulator (%eax).  S
 increments %esi by 4 bytes.  So after LODSL, the situation now looks like this:
 </p>
 
-<pre class="example" id="org4b19523">
+<pre class="example" id="orgb627822">
         08 00 00 00     &lt;- We're still executing this one
         1C 00 00 00     &lt;- %eax now contains this address (0x0000001C)
 %esi -&gt; 2C 00 00 00
@@ -675,7 +680,7 @@ Now we just need to jump to the address in %eax.  This is again just a single x8
 written <code>JMP *(%eax)</code>.  And after doing the jump, the situation looks like:
 </p>
 
-<pre class="example" id="orgcdb5e7c">
+<pre class="example" id="org003f6a9">
         08 00 00 00
         1C 00 00 00     &lt;- Now we're executing this subroutine.
 %esi -&gt; 2C 00 00 00
@@ -701,11 +706,11 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
 </div>
 
 <p>
-The macro is called NEXT.  That's a FORTH-ism.  It expands to those two instructions.
+The macro is called <code>NEXT</code>.  That's a FORTH-ism.  It expands to those two instructions.
 </p>
 
 <p>
-Every FORTH primitive that we write has to be ended by NEXT.  Think of it kind of like
+Every FORTH primitive that we write has to be ended by <code>NEXT</code>.  Think of it kind of like
 a return.
 </p>
 
@@ -715,7 +720,7 @@ The above describes what is known as direct threaded code.
 
 <p>
 To sum up: We compress our function calls down to a list of addresses and use a somewhat
-magical macro to act as a "jump to next function in the list".  We also use one register (%esi)
+magical macro to act as a "jump to next function in the list".  We also use one register (<code>%esi</code>)
 to act as a kind of instruction pointer, pointing to the next function in the list.
 </p>
 
@@ -723,13 +728,13 @@ to act as a kind of instruction pointer, pointing to the next function in the li
 I'll just give you a hint of what is to come by saying that a FORTH definition such as:
 </p>
 
-<pre class="example" id="orgdaddbc5">
+<pre class="example" id="org09654cc">
 : QUADRUPLE DOUBLE DOUBLE ;
 </pre>
 
 <p>
 actually compiles (almost, not precisely but we'll see why in a moment) to a list of
-function addresses for DOUBLE, DOUBLE and a special function called EXIT to finish off.
+function addresses for <code>DOUBLE</code>, <code>DOUBLE</code> and a special function called <code>EXIT</code> to finish off.
 </p>
 
 <p>
@@ -742,37 +747,22 @@ I lied about <code>JMP *(%eax)</code>.
 </div>
 </div>
 
-<div id="outline-container-orgacc3086" class="outline-2">
-<h2 id="orgacc3086"><span class="section-number-2">8</span> Indirect Threaded Code</h2>
+<div id="outline-container-orgf7e675b" class="outline-2">
+<h2 id="orgf7e675b"><span class="section-number-2">8</span> Indirect Threaded Code</h2>
 <div class="outline-text-2" id="text-8">
 <p>
 It turns out that direct threaded code is interesting but only if you want to just execute
-a list of functions written in assembly language.  So QUADRUPLE would work only if DOUBLE
-was an assembly language function.  In the direct threaded code, QUADRUPLE would look like:
+a list of functions written in assembly language.  So <code>QUADRUPLE</code> would work only if <code>DOUBLE</code>
+was an assembly language function.  In the direct threaded code, <code>QUADRUPLE</code> would look like:
 </p>
 
-<p>
-<del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of DOUBLE  ---------------&#x2013;&#x2014;&gt; (assembly code to do the double)</td>
-</tr>
-</tbody>
-</table>
-<p>
-	<del>------------------</del>                    NEXT
+<pre class="example" id="org829338b">
+        +------------------+
+        | addr of DOUBLE  --------------------&gt; (assembly code to do the double)
+        +------------------+                    NEXT
 %esi -&gt; | addr of DOUBLE   |
-</p>
-<p>
-<del>------------------</del>
-</p>
+        +------------------+
+</pre>
 
 <p>
 We can add an extra indirection to allow us to run both words written in assembly language
@@ -780,194 +770,42 @@ We can add an extra indirection to allow us to run both words written in assembl
 </p>
 
 <p>
-The extra indirection is the reason for the brackets in JMP *(%eax).
+The extra indirection is the reason for the brackets in <code>JMP *(%eax)</code>.
 </p>
 
 <p>
-Let's have a look at how QUADRUPLE and DOUBLE really look in FORTH:
+Let's have a look at how <code>QUADRUPLE</code> and <code>DOUBLE</code> really look in FORTH:
 </p>
 
-<pre class="example">
-QUADRUPLE DOUBLE DOUBLE ;
+<pre class="example" id="orgb0a388f">
+: QUADRUPLE DOUBLE DOUBLE ;
+
++------------------+
+| codeword         |               : DOUBLE DUP + ;
++------------------+
+| addr of DOUBLE  ---------------&gt; +------------------+
++------------------+               | codeword         |
+| addr of DOUBLE   |               +------------------+
++------------------+               | addr of DUP   --------------&gt; +------------------+
+| addr of EXIT     |               +------------------+            | codeword      -------+
++------------------+       %esi -&gt; | addr of +     --------+       +------------------+   |
+                                   +------------------+    |       | assembly to    &lt;-----+
+                                   | addr of EXIT     |    |       | implement DUP    |
+                                   +------------------+    |       |    ..            |
+                                                           |       |    ..            |
+                                                           |       | NEXT             |
+                                                           |       +------------------+
+                                                           |
+                                                           +-----&gt; +------------------+
+                                                                   | codeword      -------+
+                                                                   +------------------+   |
+                                                                   | assembly to   &lt;------+
+                                                                   | implement +      |
+                                                                   |    ..            |
+                                                                   |    ..            |
+                                                                   | NEXT             |
+                                                                   +------------------+
 </pre>
-
-
-<p>
-<del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">codeword</td>
-<td class="org-left">: DOUBLE DUP + ;</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of DOUBLE  ----------&#x2013;&#x2014;&gt; <del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               | codeword         |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of DOUBLE</td>
-<td class="org-left"><del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               | addr of DUP   ---------&#x2013;&#x2014;&gt; <del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of EXIT</td>
-<td class="org-left"><del>------------------</del></td>
-<td class="org-left">codeword      --&#x2013;&#x2014;+</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>       %esi -&gt; | addr of +     ---&#x2013;&#x2014;+       <del>------------------</del>   |
-				   <del>------------------</del>    |       | assembly to    &lt;&#x2013;&#x2014;+
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of EXIT</td>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">implement DUP</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>    |       |    ..            |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">..</td>
-</tr>
-
-<tr>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">NEXT</td>
-</tr>
-
-<tr>
-<td class="org-left"><del>------------------</del></td>
-</tr>
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-<del>&#x2013;&#x2014;&gt; +------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">codeword      --&#x2013;&#x2014;+</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>   |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">assembly to   &lt;-&#x2013;&#x2014;+</td>
-</tr>
-
-<tr>
-<td class="org-left">implement +</td>
-</tr>
-
-<tr>
-<td class="org-left">..</td>
-</tr>
-
-<tr>
-<td class="org-left">..</td>
-</tr>
-
-<tr>
-<td class="org-left">NEXT</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>
-</p>
 
 <p>
 This is the part where you may need an extra cup of tea/coffee/favourite caffeinated
@@ -979,169 +817,58 @@ They don't need interpreting, they just run.
 </p>
 
 <p>
-In words written in FORTH (like QUADRUPLE and DOUBLE), the codeword points to an interpreter
+In words written in FORTH (like <code>QUADRUPLE</code> and <code>DOUBLE</code>), the codeword points to an interpreter
 function.
 </p>
 
 <p>
 I'll show you the interpreter function shortly, but let's recall our indirect
-JMP *(%eax) with the "extra" brackets.  Take the case where we're executing DOUBLE
-as shown, and DUP has been called.  Note that %esi is pointing to the address of +
+<code>JMP *(%eax)</code> with the "extra" brackets.  Take the case where we're executing <code>DOUBLE</code>
+as shown, and <code>dup</code> has been called.  Note that <code>%esi</code> is pointing to the address of <code>+</code>
 </p>
 
 <p>
-The assembly code for DUP eventually does a NEXT.  That:
+The assembly code for <code>DUP</code> eventually does a <code>NEXT</code>.  That:
 </p>
 
-<p>
-(1) reads the address of + into %eax            %eax points to the codeword of +
-(2) increments %esi by 4
-(3) jumps to the indirect %eax                  jumps to the address in the codeword of +,
-						ie. the assembly code to implement +
+<ol class="org-ol">
+<li>reads the address of <code>+</code> into <code>%eax</code>            <code>%eax</code> points to the codeword of <code>+</code></li>
+<li>increments <code>%esi</code> by 4</li>
+<li><p>
+jumps to the indirect <code>%eaxk                    jumps to the address in the codeword of =+</code>, ie. the assembly code to implement <code>+</code>
 </p>
 
-<p>
-<del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">codeword</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of DOUBLE  ----------&#x2013;&#x2014;&gt; <del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               | codeword         |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of DOUBLE</td>
-<td class="org-left"><del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               | addr of DUP   ---------&#x2013;&#x2014;&gt; <del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of EXIT</td>
-<td class="org-left"><del>------------------</del></td>
-<td class="org-left">codeword      --&#x2013;&#x2014;+</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               | addr of +     ---&#x2013;&#x2014;+       <del>------------------</del>   |
-				   <del>------------------</del>    |       | assembly to    &lt;&#x2013;&#x2014;+
-			   %esi -&gt; | addr of EXIT     |    |       | implement DUP    |
-				   <del>------------------</del>    |       |    ..            |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">..</td>
-</tr>
-
-<tr>
-<td class="org-left">&#xa0;</td>
-<td class="org-left">NEXT</td>
-</tr>
-
-<tr>
-<td class="org-left"><del>------------------</del></td>
-</tr>
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-<del>&#x2013;&#x2014;&gt; +------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">codeword      --&#x2013;&#x2014;+</td>
-</tr>
-</tbody>
-</table>
-<p>
-	   <del>------------------</del>   |
-now we're  | assembly to    &lt;&#x2013;&#x2014;+
-executing  | implement +      |
-this       |    ..            |
-function   |    ..            |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">NEXT</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>
-</p>
+<pre class="example" id="orgbb6459e">
++------------------+
+| codeword         |
++------------------+
+| addr of DOUBLE  ---------------&gt; +------------------+
++------------------+               | codeword         |
+| addr of DOUBLE   |               +------------------+
++------------------+               | addr of DUP   --------------&gt; +------------------+
+| addr of EXIT     |               +------------------+            | codeword      -------+
++------------------+               | addr of +     --------+       +------------------+   |
+                                   +------------------+    |       | assembly to    &lt;-----+
+                           %esi -&gt; | addr of EXIT     |    |       | implement DUP    |
+                                   +------------------+    |       |    ..            |
+                                                           |       |    ..            |
+                                                           |       | NEXT             |
+                                                           |       +------------------+
+                                                           |
+                                                           +-----&gt; +------------------+
+                                                                   | codeword      -------+
+                                                                   +------------------+   |
+                                                        now we're  | assembly to    &lt;-----+
+                                                        executing  | implement +      |
+                                                        this       |    ..            |
+                                                        function   |    ..            |
+                                                                   | NEXT             |
+                                                                   +------------------+
+</pre></li>
+</ol>
 
 <p>
-So I hope that I've convinced you that NEXT does roughly what you'd expect.  This is
+So I hope that I've convinced you that <code>NEXT</code> does roughly what you'd expect.  This is
 indirect threaded code.
 </p>
 
@@ -1156,17 +883,18 @@ I've glossed over four things.  I wonder if you can guess without reading on wha
 </p>
 
 <p>
-My list of four things are: (1) What does "EXIT" do?  (2) which is related to (1) is how do
-you call into a function, ie. how does %esi start off pointing at part of QUADRUPLE, but
-then point at part of DOUBLE.  (3) What goes in the codeword for the words which are written
+My list of four things are: (1) What does "<code>EXIT</code>" do?  (2) which is related to (1) is how do
+you call into a function, ie. how does <code>%esi</code> start off pointing at part of <code>QUADRUPLE</code>, but
+then point at part of <code>DOUBLE</code>.  (3) What goes in the codeword for the words which are written
 in FORTH?  (4) How do you compile a function which does anything except call other functions
-ie. a function which contains a number like : DOUBLE 2 * ; ?
+ie. a function which contains a number like <code>: DOUBLE 2 * ;</code> ?
 </p>
+</div>
+</div>
 
-<p>
-THE INTERPRETER AND RETURN STACK -------------------------------------------------------&#x2013;&#x2014;
-</p>
-
+<div id="outline-container-org7bea64e" class="outline-2">
+<h2 id="org7bea64e"><span class="section-number-2">9</span> The Interpreter and Return Stack</h2>
+<div class="outline-text-2" id="text-9">
 <p>
 Going at these in no particular order, let's talk about issues (3) and (2), the interpreter
 and the return stack.
@@ -1182,207 +910,116 @@ threaded model above.
 </p>
 
 <p>
-One of the things that needs to happen when QUADRUPLE calls DOUBLE is that we save the old
-%esi ("instruction pointer") and create a new one pointing to the first word in DOUBLE.
-Because we will need to restore the old %esi at the end of DOUBLE (this is, after all, like
-a function call), we will need a stack to store these "return addresses" (old values of %esi).
+One of the things that needs to happen when <code>QUADRUPLE</code> calls <code>DOUBLE</code> is that we save the old
+<code>%esi</code> ("instruction pointer") and create a new one pointing to the first word in <code>DOUBLE</code>.
+Because we will need to restore the old <code>%esi</code> at the end of <code>DOUBLE</code> (this is, after all, like
+a function call), we will need a stack to store these "return addresses" (old values of <code>%esi</code>).
 </p>
 
 <p>
 As you will have seen in the background documentation, FORTH has two stacks, an ordinary
 stack for parameters, and a return stack which is a bit more mysterious.  But our return
-stack is just the stack I talked about in the previous paragraph, used to save %esi when
+stack is just the stack I talked about in the previous paragraph, used to save <code>%esi</code> when
 calling from a FORTH word into another FORTH word.
 </p>
 
 <p>
-In this FORTH, we are using the normal stack pointer (%esp) for the parameter stack.
-We will use the i386's "other" stack pointer (%ebp, usually called the "frame pointer")
+In this FORTH, we are using the normal stack pointer (<code>%esp</code>) for the parameter stack.
+We will use the i386's "other" stack pointer (<code>%ebp</code>, usually called the "frame pointer")
 for our return stack.
 </p>
 
 <p>
-        I've got two macros which just wrap up the details of using %ebp for the return stack.
-        You use them as for example "PUSHRSP %eax" (push %eax on the return stack) or "POPRSP %ebx"
-        (pop top of return stack into %ebx).
-*/
+I've got two macros which just wrap up the details of using <code>%ebp</code> for the return stack.
+You use them as for example "<code>PUSHRSP %eax</code>" (push <code>%eax</code> on the return stack) or "<code>POPRSP %ebx</code>"
+(pop top of return stack into <code>%ebx</code>).
+</p>
+
+
+<div class="org-src-container">
+<pre class="src src-asm">/* Macros to deal with the return stack. */
+	.macro PUSHRSP reg
+	lea -4(%ebp),%ebp       // push reg on to return stack
+	movl \reg,(%ebp)
+	.endm
+
+	.macro POPRSP reg
+	mov (%ebp),\reg         // pop top of return stack to reg
+	lea 4(%ebp),%ebp
+	.endm
+</pre>
+</div>
+
+<p>
+And with that we can now talk about the interpreter.
 </p>
 
 <p>
-<i>* Macros to deal with the return stack. *</i>
-        .macro PUSHRSP reg
-        lea -4(%ebp),%ebp       // push reg on to return stack
-        movl &reg;,(%ebp)
-        .endm
+In FORTH the interpreter function is often called <code>DOCOL</code> (I think it means "DO COLON" because
+all FORTH definitions start with a colon, as in <code>: DOUBLE DUP + ;</code>
 </p>
 
 <p>
-.macro POPRSP reg
-mov (%ebp),&reg;         // pop top of return stack to reg
-lea 4(%ebp),%ebp
-.endm
+The "interpreter" (it's not really "interpreting") just needs to push the old <code>%esi</code> on the
+stack and set <code>%esi</code> to the first word in the definition.  Remember that we jumped to the
+function using <code>JMP *(%eax)</code>?  Well a consequence of that is that conveniently <code>%eax</code> contains
+the address of this codeword, so just by adding 4 to it we get the address of the first
+data word.  Finally after setting up <code>%esi</code>, it just does <code>NEXT</code> which causes that first word
+to run.
 </p>
 
-<p>
-/*
-        And with that we can now talk about the interpreter.
-</p>
-
-<p>
-In FORTH the interpreter function is often called DOCOL (I think it means "DO COLON" because
-all FORTH definitions start with a colon, as in : DOUBLE DUP + ;
-</p>
-
-<p>
-        The "interpreter" (it's not really "interpreting") just needs to push the old %esi on the
-        stack and set %esi to the first word in the definition.  Remember that we jumped to the
-        function using JMP *(%eax)?  Well a consequence of that is that conveniently %eax contains
-        the address of this codeword, so just by adding 4 to it we get the address of the first
-        data word.  Finally after setting up %esi, it just does NEXT which causes that first word
-        to run.
-*/
-</p>
-
-<p>
-<i>* DOCOL - the interpreter! *</i>
-        .text
-        .align 4
+<div class="org-src-container">
+<pre class="src src-asm">/* DOCOL - the interpreter! */
+	.text
+	.align 4
 DOCOL:
-        PUSHRSP %esi            <i>/ push %esi on to the return stack
-        addl $4,%eax            /</i> %eax points to codeword, so make
-        movl %eax,%esi          // %esi point to first data word
-        NEXT
-</p>
+	PUSHRSP %esi            // push %esi on to the return stack
+	addl $4,%eax            // %eax points to codeword, so make
+	movl %eax,%esi          // %esi point to first data word
+	NEXT
+</pre>
+</div>
 
 <p>
-/*
-        Just to make this absolutely clear, let's see how DOCOL works when jumping from QUADRUPLE
-        into DOUBLE:
+Just to make this absolutely clear, let's see how <code>DOCOL</code> works when jumping from <code>QUADRUPLE</code>
+into <code>DOUBLE</code>:
 </p>
 
+<pre class="example" id="org771d972">
+        QUADRUPLE:
+        +------------------+
+        | codeword         |
+        +------------------+               DOUBLE:
+        | addr of DOUBLE  ---------------&gt; +------------------+
+        +------------------+       %eax -&gt; | addr of DOCOL    |
+%esi -&gt; | addr of DOUBLE   |               +------------------+
+        +------------------+               | addr of DUP      |
+        | addr of EXIT     |               +------------------+
+        +------------------+               | etc.             |
+</pre>
+
 <p>
-QUADRUPLE:
-</p>
-<p>
-<del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">codeword</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               DOUBLE:
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of DOUBLE  ----------&#x2013;&#x2014;&gt; <del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-	<del>------------------</del>       %eax -&gt; | addr of DOCOL    |
-%esi -&gt; | addr of DOUBLE   |               <del>------------------</del>
-	<del>------------------</del>               | addr of DUP      |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of EXIT</td>
-<td class="org-left"><del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               | etc.             |
+First, the call to <code>DOUBLE</code> calls <code>DOCOL</code> (the codeword of <code>DOUBLE</code>).  <code>DOCOL</code> does this:  It
+pushes the old <code>%esi</code> on the return stack.  <code>%eax</code> points to the codeword of <code>DOUBLE</code>, so we
+just add 4 on to it to get our new <code>%esi</code>:
 </p>
 
-<p>
-First, the call to DOUBLE calls DOCOL (the codeword of DOUBLE).  DOCOL does this:  It
-pushes the old %esi on the return stack.  %eax points to the codeword of DOUBLE, so we
-just add 4 on to it to get our new %esi:
-</p>
+<pre class="example" id="orgecc7eb9">
+                QUADRUPLE:
+                +------------------+
+                | codeword         |
+                +------------------+               DOUBLE:
+                | addr of DOUBLE  ---------------&gt; +------------------+
+top of return   +------------------+       %eax -&gt; | addr of DOCOL    |
+stack points -&gt; | addr of DOUBLE   |       + 4 =   +------------------+
+                +------------------+       %esi -&gt; | addr of DUP      |
+                | addr of EXIT     |               +------------------+
+                +------------------+               | etc.             |
+</pre>
 
 <p>
-QUADRUPLE:
-</p>
-<p>
-<del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">codeword</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               DOUBLE:
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of DOUBLE  ----------&#x2013;&#x2014;&gt; <del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-top of return   <del>------------------</del>       %eax -&gt; | addr of DOCOL    |
-stack points -&gt; | addr of DOUBLE   |       + 4 =   <del>------------------</del>
-                <del>------------------</del>       %esi -&gt; | addr of DUP      |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of EXIT</td>
-<td class="org-left"><del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               | etc.             |
-</p>
-
-<p>
-Then we do NEXT, and because of the magic of threaded code that increments %esi again
-and calls DUP.
+Then we do <code>NEXT</code>, and because of the magic of threaded code that increments <code>%esi</code> again
+and calls <code>DUP</code>.
 </p>
 
 <p>
@@ -1390,17 +1027,18 @@ Well, it seems to work.
 </p>
 
 <p>
-One minor point here.  Because DOCOL is the first bit of assembly actually to be defined
+One minor point here.  Because <code>DOCOL</code> is the first bit of assembly actually to be defined
 in this file (the others were just macros), and because I usually compile this code with the
-text segment starting at address 0, DOCOL has address 0.  So if you are disassembling the
+text segment starting at address 0, <code>DOCOL</code> has address 0.  So if you are disassembling the
 code and see a word with a codeword of 0, you will immediately know that the word is
-written in FORTH (it's not an assembler primitive) and so uses DOCOL as the interpreter.
+written in FORTH (it's not an assembler primitive) and so uses <code>DOCOL</code> as the interpreter.
 </p>
+</div>
+</div>
 
-<p>
-STARTING UP -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
-
+<div id="outline-container-org32f1cc7" class="outline-2">
+<h2 id="org32f1cc7"><span class="section-number-2">10</span> Starting Up</h2>
+<div class="outline-text-2" id="text-10">
 <p>
 Now let's get down to nuts and bolts.  When we start the program we need to set up
 a few things like the return stack.  But as soon as we can, we want to jump into FORTH
@@ -1409,135 +1047,60 @@ assembly language primitives).
 </p>
 
 <p>
-        This is what the set up code does.  Does a tiny bit of house-keeping, sets up the
-        separate return stack (NB: Linux gives us the ordinary parameter stack already), then
-        immediately jumps to a FORTH word called QUIT.  Despite its name, QUIT doesn't quit
-        anything.  It resets some internal state and starts reading and interpreting commands.
-        (The reason it is called QUIT is because you can call QUIT from your own FORTH code
-        to "quit" your program and go back to interpreting).
-*/
+This is what the set up code does.  Does a tiny bit of house-keeping, sets up the
+separate return stack (NB: Linux gives us the ordinary parameter stack already), then
+immediately jumps to a FORTH word called <code>QUIT</code>.  Despite its name, <code>QUIT</code> doesn't quit
+anything.  It resets some internal state and starts reading and interpreting commands.
+(The reason it is called <code>QUIT</code> is because you can call <code>QUIT</code> from your own FORTH code
+to "quit" your program and go back to interpreting).
 </p>
 
-<p>
-<i>* Assembler entry point. *</i>
-        .text
-        .globl _start
+<div class="org-src-container">
+<pre class="src src-asm">/* Assembler entry point. */
+	.text
+	.globl _start
 _start:
-        cld
-        mov %esp,var<sub>S0</sub>         <i>/ Save the initial data stack pointer in FORTH variable S0.
-        mov $return<sub>stack</sub><sub>top</sub>,%ebp /</i> Initialise the return stack.
-        call set<sub>up</sub><sub>data</sub><sub>segment</sub>
-</p>
+	cld
+	mov %esp,var_S0         // Save the initial data stack pointer in FORTH variable S0.
+	mov $return_stack_top,%ebp // Initialise the return stack.
+	call set_up_data_segment
 
-<p>
-mov $cold<sub>start</sub>,%esi    <i>/ Initialise interpreter.
-NEXT                    /</i> Run interpreter!
-</p>
+	mov $cold_start,%esi    // Initialise interpreter.
+	NEXT                    // Run interpreter!
 
-<p>
-        .section .rodata
-cold<sub>start</sub>:                     // High-level code without a codeword.
-        .int QUIT
-</p>
+	.section .rodata
+cold_start:                     // High-level code without a codeword.
+	.int QUIT
+</pre>
+</div>
+</div>
+</div>
 
-<p>
-/*
-        BUILT-IN WORDS -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
-
+<div id="outline-container-org3a0b01e" class="outline-2">
+<h2 id="org3a0b01e"><span class="section-number-2">11</span> Built-In Words</h2>
+<div class="outline-text-2" id="text-11">
 <p>
 Remember our dictionary entries (headers)?  Let's bring those together with the codeword
-and data words to see how : DOUBLE DUP + ; really looks in memory.
+and data words to see how <code>: DOUBLE DUP + ;</code> really looks in memory.
 </p>
 
-<p>
-pointer to previous word
- ^
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-<del>&#x2013;|------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>------------</del>------------<del>------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">6</td>
-<td class="org-left">D</td>
-<td class="org-left">O</td>
-<td class="org-left">U</td>
-<td class="org-left">B</td>
-<td class="org-left">L</td>
-<td class="org-left">E</td>
-<td class="org-right">0</td>
-<td class="org-left">DOCOL</td>
-<td class="org-left">DUP</td>
-<td class="org-left">+</td>
-<td class="org-left">EXIT</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>---<del>---</del>---<del>---</del>------------<del>&#x2013;|---------</del>------------<del>------------</del>
+<pre class="example" id="org0234325">
+  pointer to previous word
+   ^
+   |
++--|------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+| LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          | EXIT       |
++---------+---+---+---+---+---+---+---+---+------------+--|---------+------------+------------+
    ^       len                         pad  codeword      |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">V</td>
-</tr>
-</tbody>
-</table>
-<p>
-LINK in next word                             points to codeword of DUP
-</p>
+   |                                                      V
+  LINK in next word                             points to codeword of DUP
+</pre>
 
 <p>
-Initially we can't just write ": DOUBLE DUP + ;" (ie. that literal string) here because we
+Initially we can't just write "<code>: DOUBLE DUP + ;</code>" (ie. that literal string) here because we
 don't yet have anything to read the string, break it up at spaces, parse each word, etc. etc.
 So instead we will have to define built-in words using the GNU assembler data constructors
-(like .int, .byte, .string, .ascii and so on &#x2013; look them up in the gas info page if you are
+(like <code>.int</code>, <code>.byte</code>, <code>.string</code>, <code>.ascii</code> and so on &#x2013; look them up in the gas info page if you are
 unsure of them).
 </p>
 
@@ -1545,341 +1108,260 @@ unsure of them).
 The long way would be:
 </p>
 
-<p>
+<pre class="example" id="orgbf6f75e">
         .int &lt;link to previous word&gt;
-        .byte 6                 <i>/ len
-        .ascii "DOUBLE"         /</i> string
-        .byte 0                 <i>/ padding
-DOUBLE: .int DOCOL              /</i> codeword
-        .int DUP                <i>/ pointer to codeword of DUP
-        .int PLUS               /</i> pointer to codeword of +
+        .byte 6                 // len
+        .ascii "DOUBLE"         // string
+        .byte 0                 // padding
+DOUBLE: .int DOCOL              // codeword
+        .int DUP                // pointer to codeword of DUP
+        .int PLUS               // pointer to codeword of +
         .int EXIT               // pointer to codeword of EXIT
-</p>
+</pre>
 
 <p>
 That's going to get quite tedious rather quickly, so here I define an assembler macro
 so that I can just write:
 </p>
 
-<p>
+<pre class="example" id="org25316b8">
 defword "DOUBLE",6,,DOUBLE
 .int DUP,PLUS,EXIT
-</p>
+</pre>
 
 <p>
 and I'll get exactly the same effect.
 </p>
 
 <p>
-        Don't worry too much about the exact implementation details of this macro - it's complicated!
-*/
+Don't worry too much about the exact implementation details of this macro - it's complicated!
 </p>
 
-<p>
-<i>* Flags - these are discussed later. *</i>
-        .set F<sub>IMMED,0x80</sub>
-        .set F<sub>HIDDEN,0x20</sub>
-        .set F<sub>LENMASK,0x1f</sub>     // length mask
-</p>
 
-<p>
-// Store the chain of links.
-.set link,0
-</p>
+<div class="org-src-container">
+<pre class="src src-asm">/* Flags - these are discussed later. */
+	.set F_IMMED,0x80
+	.set F_HIDDEN,0x20
+	.set F_LENMASK,0x1f     // length mask
 
-<p>
-        .macro defword name, namelen, flags=0, label
-        .section .rodata
-        .align 4
-        .globl name<sub>\label</sub>
-name<sub>\label</sub> :
-        .int link               // link
-        .set link,name<sub>\label</sub>
-        .byte \flags+\namelen   <i>/ flags + length byte
-        .ascii "\name"          /</i> the name
-        .align 4                // padding to next 4 byte boundary
-        .globl \label
+	// Store the chain of links.
+	.set link,0
+
+	.macro defword name, namelen, flags=0, label
+	.section .rodata
+	.align 4
+	.globl name_\label
+name_\label :
+	.int link               // link
+	.set link,name_\label
+	.byte \flags+\namelen   // flags + length byte
+	.ascii "\name"          // the name
+	.align 4                // padding to next 4 byte boundary
+	.globl \label
 \label :
-        .int DOCOL              <i>/ codeword - the interpreter
-        /</i> list of word pointers follow
-        .endm
+	.int DOCOL              // codeword - the interpreter
+	// list of word pointers follow
+	.endm
+</pre>
+</div>
+
+<p>
+Similarly I want a way to write words written in assembly language.  There will be quite a few
+of these to start with because, well, everything has to start in assembly before there's
+enough "infrastructure" to be able to start writing FORTH words, but also I want to define
+some common FORTH words in assembly language for speed, even though I could write them in FORTH.
 </p>
 
 <p>
-/*
-        Similarly I want a way to write words written in assembly language.  There will be quite a few
-        of these to start with because, well, everything has to start in assembly before there's
-        enough "infrastructure" to be able to start writing FORTH words, but also I want to define
-        some common FORTH words in assembly language for speed, even though I could write them in FORTH.
+This is what <code>DUP</code> looks like in memory:
 </p>
 
-<p>
-This is what DUP looks like in memory:
-</p>
-
-<p>
-pointer to previous word
- ^
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-<del>&#x2013;|------</del>---<del>---</del>---<del>---</del>-------&#x2013;&#x2014;+
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-right" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">LINK</td>
-<td class="org-right">3</td>
-<td class="org-left">D</td>
-<td class="org-left">U</td>
-<td class="org-left">P</td>
-<td class="org-left">code<sub>DUP</sub> ----------------&#x2013;&#x2014;&gt; points to the assembly</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>---------</del>---<del>---</del>---<del>---</del>-------&#x2013;&#x2014;+                    code used to write DUP,
+<pre class="example" id="org1c99800">
+  pointer to previous word
+   ^
+   |
++--|------+---+---+---+---+------------+
+| LINK    | 3 | D | U | P | code_DUP ---------------------&gt; points to the assembly
++---------+---+---+---+---+------------+                    code used to write DUP,
    ^       len              codeword                        which ends with NEXT.
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<tbody>
-<tr>
-</tr>
-</tbody>
-</table>
-<p>
-LINK in next word
-</p>
+   |
+  LINK in next word
+</pre>
 
 <p>
-        Again, for brevity in writing the header I'm going to write an assembler macro called defcode.
-        As with defword above, don't worry about the complicated details of the macro.
-*/
+Again, for brevity in writing the header I'm going to write an assembler macro called defcode.
+As with defword above, don't worry about the complicated details of the macro.
 </p>
 
-<p>
-        .macro defcode name, namelen, flags=0, label
-        .section .rodata
-        .align 4
-        .globl name<sub>\label</sub>
-name<sub>\label</sub> :
-        .int link               // link
-        .set link,name<sub>\label</sub>
-        .byte \flags+\namelen   <i>/ flags + length byte
-        .ascii "\name"          /</i> the name
-        .align 4                // padding to next 4 byte boundary
-        .globl \label
+
+<div class="org-src-container">
+<pre class="src src-asm">	.macro defcode name, namelen, flags=0, label
+	.section .rodata
+	.align 4
+	.globl name_\label
+name_\label :
+	.int link               // link
+	.set link,name_\label
+	.byte \flags+\namelen   // flags + length byte
+	.ascii "\name"          // the name
+	.align 4                // padding to next 4 byte boundary
+	.globl \label
 \label :
-        .int code<sub>\label</sub>        // codeword
-        .text
-        //.align 4
-        .globl code<sub>\label</sub>
-code<sub>\label</sub> :                   // assembler code follows
-        .endm
-</p>
+	.int code_\label        // codeword
+	.text
+	//.align 4
+	.globl code_\label
+code_\label :                   // assembler code follows
+	.endm
+</pre>
+</div>
+
 
 <p>
-/*
-        Now some easy FORTH primitives.  These are written in assembly for speed.  If you understand
-        i386 assembly language then it is worth reading these.  However if you don't understand assembly
-        you can skip the details.
-*/
+Now some easy FORTH primitives.  These are written in assembly for speed.  If you understand
+i386 assembly language then it is worth reading these.  However if you don't understand assembly
+you can skip the details.
 </p>
 
-<p>
-defcode "DROP",4,,DROP
-pop %eax                // drop top of stack
-NEXT
-</p>
 
-<p>
-defcode "SWAP",4,,SWAP
-pop %eax                // swap top two elements on stack
-pop %ebx
-push %eax
-push %ebx
-NEXT
-</p>
+<div class="org-src-container">
+<pre class="src src-asm">	defcode "DROP",4,,DROP
+	pop %eax                // drop top of stack
+	NEXT
 
-<p>
-defcode "DUP",3,,DUP
-mov (%esp),%eax         // duplicate top of stack
-push %eax
-NEXT
-</p>
+	defcode "SWAP",4,,SWAP
+	pop %eax                // swap top two elements on stack
+	pop %ebx
+	push %eax
+	push %ebx
+	NEXT
 
-<p>
-defcode "OVER",4,,OVER
-mov 4(%esp),%eax        <i>/ get the second element of stack
-push %eax               /</i> and push it on top
-NEXT
-</p>
+	defcode "DUP",3,,DUP
+	mov (%esp),%eax         // duplicate top of stack
+	push %eax
+	NEXT
 
-<p>
-defcode "ROT",3,,ROT
-pop %eax
-pop %ebx
-pop %ecx
-push %ebx
-push %eax
-push %ecx
-NEXT
-</p>
+	defcode "OVER",4,,OVER
+	mov 4(%esp),%eax        // get the second element of stack
+	push %eax               // and push it on top
+	NEXT
 
-<p>
-defcode "-ROT",4,,NROT
-pop %eax
-pop %ebx
-pop %ecx
-push %eax
-push %ecx
-push %ebx
-NEXT
-</p>
+	defcode "ROT",3,,ROT
+	pop %eax
+	pop %ebx
+	pop %ecx
+	push %ebx
+	push %eax
+	push %ecx
+	NEXT
 
-<p>
-defcode "2DROP",5,,TWODROP // drop top two elements of stack
-pop %eax
-pop %eax
-NEXT
-</p>
+	defcode "-ROT",4,,NROT
+	pop %eax
+	pop %ebx
+	pop %ecx
+	push %eax
+	push %ecx
+	push %ebx
+	NEXT
 
-<p>
-defcode "2DUP",4,,TWODUP // duplicate top two elements of stack
-mov (%esp),%eax
-mov 4(%esp),%ebx
-push %ebx
-push %eax
-NEXT
-</p>
+	defcode "2DROP",5,,TWODROP // drop top two elements of stack
+	pop %eax
+	pop %eax
+	NEXT
 
-<p>
-defcode "2SWAP",5,,TWOSWAP // swap top two pairs of elements of stack
-pop %eax
-pop %ebx
-pop %ecx
-pop %edx
-push %ebx
-push %eax
-push %edx
-push %ecx
-NEXT
-</p>
+	defcode "2DUP",4,,TWODUP // duplicate top two elements of stack
+	mov (%esp),%eax
+	mov 4(%esp),%ebx
+	push %ebx
+	push %eax
+	NEXT
 
-<p>
-        defcode "?DUP",4,,QDUP  // duplicate top of stack if non-zero
-        movl (%esp),%eax
-        test %eax,%eax
-        jz 1f
-        push %eax
+	defcode "2SWAP",5,,TWOSWAP // swap top two pairs of elements of stack
+	pop %eax
+	pop %ebx
+	pop %ecx
+	pop %edx
+	push %ebx
+	push %eax
+	push %edx
+	push %ecx
+	NEXT
+
+	defcode "?DUP",4,,QDUP  // duplicate top of stack if non-zero
+	movl (%esp),%eax
+	test %eax,%eax
+	jz 1f
+	push %eax
 1:      NEXT
-</p>
+
+	defcode "1+",2,,INCR
+	incl (%esp)             // increment top of stack
+	NEXT
+
+	defcode "1-",2,,DECR
+	decl (%esp)             // decrement top of stack
+	NEXT
+
+	defcode "4+",2,,INCR4
+	addl $4,(%esp)          // add 4 to top of stack
+	NEXT
+
+	defcode "4-",2,,DECR4
+	subl $4,(%esp)          // subtract 4 from top of stack
+	NEXT
+
+	defcode "+",1,,ADD
+	pop %eax                // get top of stack
+	addl %eax,(%esp)        // and add it to next word on stack
+	NEXT
+
+	defcode "-",1,,SUB
+	pop %eax                // get top of stack
+	subl %eax,(%esp)        // and subtract it from next word on stack
+	NEXT
+
+	defcode "*",1,,MUL
+	pop %eax
+	pop %ebx
+	imull %ebx,%eax
+	push %eax               // ignore overflow
+	NEXT
+</pre>
+</div>
+
 
 <p>
-defcode "1+",2,,INCR
-incl (%esp)             // increment top of stack
-NEXT
+In this FORTH, only <code>/MOD</code> is primitive.  Later we will define the <code>/</code> and <code>MOD</code> words in
+terms of the primitive <code>/MOD</code>.  The design of the i386 assembly instruction <code>idiv</code> which
+leaves both quotient and remainder makes this the obvious choice.
 </p>
 
-<p>
-defcode "1-",2,,DECR
-decl (%esp)             // decrement top of stack
-NEXT
-</p>
 
-<p>
-defcode "4+",2,,INCR4
-addl $4,(%esp)          // add 4 to top of stack
-NEXT
-</p>
-
-<p>
-defcode "4-",2,,DECR4
-subl $4,(%esp)          // subtract 4 from top of stack
-NEXT
-</p>
-
-<p>
-defcode "+",1,,ADD
-pop %eax                <i>/ get top of stack
-addl %eax,(%esp)        /</i> and add it to next word on stack
-NEXT
-</p>
-
-<p>
-defcode "-",1,,SUB
-pop %eax                <i>/ get top of stack
-subl %eax,(%esp)        /</i> and subtract it from next word on stack
-NEXT
-</p>
-
-<p>
-defcode "*",1,,MUL
-pop %eax
-pop %ebx
-imull %ebx,%eax
-push %eax               // ignore overflow
-NEXT
-</p>
-
-<p>
-/*
-        In this FORTH, only /MOD is primitive.  Later we will define the / and MOD words in
-        terms of the primitive /MOD.  The design of the i386 assembly instruction idiv which
-        leaves both quotient and remainder makes this the obvious choice.
-*/
-</p>
-
-<p>
-defcode "/MOD",4,,DIVMOD
+<div class="org-src-container">
+<pre class="src src-asm">defcode "/MOD",4,,DIVMOD
 xor %edx,%edx
 pop %ebx
 pop %eax
 idivl %ebx
-push %edx               <i>/ push remainder
-push %eax               /</i> push quotient
+push %edx               // push remainder
+push %eax               // push quotient
 NEXT
+</pre>
+</div>
+
+<p>
+Lots of comparison operations like =, &lt;, &gt;, etc..
 </p>
 
 <p>
-/*
-        Lots of comparison operations like =, &lt;, &gt;, etc..
+ANS FORTH says that the comparison words should return all (binary) 1's for
+TRUE and all 0's for FALSE.  However this is a bit of a strange convention
+so this FORTH breaks it and returns the more normal (for C programmers &#x2026;)
+1 meaning TRUE and 0 meaning FALSE.
 </p>
 
-<p>
-        ANS FORTH says that the comparison words should return all (binary) 1's for
-        TRUE and all 0's for FALSE.  However this is a bit of a strange convention
-        so this FORTH breaks it and returns the more normal (for C programmers &#x2026;)
-        1 meaning TRUE and 0 meaning FALSE.
-*/
-</p>
-
-<p>
-defcode "=",1,,EQU      // top two words are equal?
+<div class="org-src-container">
+<pre class="src src-asm">defcode "=",1,,EQU      // top two words are equal?
 pop %eax
 pop %ebx
 cmp %ebx,%eax
@@ -1887,9 +1369,7 @@ sete %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "&lt;&gt;",2,,NEQU    // top two words are not equal?
 pop %eax
 pop %ebx
@@ -1898,9 +1378,7 @@ setne %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "&lt;",1,,LT
 pop %eax
 pop %ebx
@@ -1909,9 +1387,7 @@ setl %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "&gt;",1,,GT
 pop %eax
 pop %ebx
@@ -1920,9 +1396,7 @@ setg %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "&lt;=",2,,LE
 pop %eax
 pop %ebx
@@ -1931,9 +1405,7 @@ setle %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "&gt;=",2,,GE
 pop %eax
 pop %ebx
@@ -1942,9 +1414,7 @@ setge %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "0=",2,,ZEQU    // top of stack equals 0?
 pop %eax
 test %eax,%eax
@@ -1952,9 +1422,7 @@ setz %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "0&lt;&gt;",3,,ZNEQU  // top of stack not 0?
 pop %eax
 test %eax,%eax
@@ -1962,9 +1430,7 @@ setnz %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "0&lt;",2,,ZLT     // comparisons with 0
 pop %eax
 test %eax,%eax
@@ -1972,9 +1438,7 @@ setl %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "0&gt;",2,,ZGT
 pop %eax
 test %eax,%eax
@@ -1982,9 +1446,7 @@ setg %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "0&lt;=",3,,ZLE
 pop %eax
 test %eax,%eax
@@ -1992,9 +1454,7 @@ setle %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "0&gt;=",3,,ZGE
 pop %eax
 test %eax,%eax
@@ -2002,225 +1462,94 @@ setge %al
 movzbl %al,%eax
 pushl %eax
 NEXT
-</p>
 
-<p>
 defcode "AND",3,,AND    // bitwise AND
 pop %eax
 andl %eax,(%esp)
 NEXT
-</p>
 
-<p>
 defcode "OR",2,,OR      // bitwise OR
 pop %eax
 orl %eax,(%esp)
 NEXT
-</p>
 
-<p>
 defcode "XOR",3,,XOR    // bitwise XOR
 pop %eax
 xorl %eax,(%esp)
 NEXT
-</p>
 
-<p>
 defcode "INVERT",6,,INVERT // this is the FORTH bitwise "NOT" function (cf. NEGATE and NOT)
 notl (%esp)
 NEXT
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgad395af" class="outline-2">
+<h2 id="orgad395af"><span class="section-number-2">12</span> Returning From Forth Words</h2>
+<div class="outline-text-2" id="text-12">
+<p>
+Time to talk about what happens when we <code>EXIT</code> a function.  In this diagram <code>QUADRUPLE</code> has called
+<code>DOUBLE</code>, and <code>DOUBLE</code> is about to exit (look at where %esi is pointing):
 </p>
 
-<p>
-/*
-        RETURNING FROM FORTH WORDS -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
-
-<p>
-Time to talk about what happens when we EXIT a function.  In this diagram QUADRUPLE has called
-DOUBLE, and DOUBLE is about to exit (look at where %esi is pointing):
-</p>
-
-<p>
+<pre class="example" id="org7f162b1">
 QUADRUPLE
-</p>
-<p>
-<del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">codeword</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               DOUBLE
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of DOUBLE  ----------&#x2013;&#x2014;&gt; <del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               | codeword         |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of DOUBLE</td>
-<td class="org-left"><del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               | addr of DUP      |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of EXIT</td>
-<td class="org-left"><del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               | addr of +        |
-</p>
-<p>
-	<del>------------------</del>
-%esi -&gt; | addr of EXIT     |
-</p>
-<p>
-<del>------------------</del>
-</p>
++------------------+
+| codeword         |
++------------------+               DOUBLE
+| addr of DOUBLE  ---------------&gt; +------------------+
++------------------+               | codeword         |
+| addr of DOUBLE   |               +------------------+
++------------------+               | addr of DUP      |
+| addr of EXIT     |               +------------------+
++------------------+               | addr of +        |
+                                   +------------------+
+                           %esi -&gt; | addr of EXIT     |
+                                   +------------------+
+</pre>
 
 <p>
-        What happens when the + function does NEXT?  Well, the following code is executed.
-*/
+What happens when the + function does <code>NEXT</code>?  Well, the following code is executed.
 </p>
 
-<p>
+<pre class="example" id="org73bd98c">
 defcode "EXIT",4,,EXIT
 POPRSP %esi             // pop return stack into %esi
 NEXT
-</p>
+</pre>
 
 <p>
-/*
-        EXIT gets the old %esi which we saved from before on the return stack, and puts it in %esi.
-        So after this (but just before NEXT) we get:
+<code>EXIT</code> gets the old <code>%esi</code> which we saved from before on the return stack, and puts it in <code>%esi</code>.
+So after this (but just before <code>NEXT</code>) we get:
 </p>
+
+<pre class="example" id="orgb04ed48">
+        QUADRUPLE
+        +------------------+
+        | codeword         |
+        +------------------+               DOUBLE
+        | addr of DOUBLE  ---------------&gt; +------------------+
+        +------------------+               | codeword         |
+%esi -&gt; | addr of DOUBLE   |               +------------------+
+        +------------------+               | addr of DUP      |
+        | addr of EXIT     |               +------------------+
+        +------------------+               | addr of +        |
+                                           +------------------+
+                                           | addr of EXIT     |
+                                           +------------------+
+</pre>
 
 <p>
-QUADRUPLE
+And <code>NEXT</code> just completes the job by, well, in this case just by calling <code>DOUBLE</code> again :-)
 </p>
-<p>
-<del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+</div>
+</div>
 
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">codeword</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               DOUBLE
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of DOUBLE  ----------&#x2013;&#x2014;&gt; <del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-	<del>------------------</del>               | codeword         |
-%esi -&gt; | addr of DOUBLE   |               <del>------------------</del>
-	<del>------------------</del>               | addr of DUP      |
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of EXIT</td>
-<td class="org-left"><del>------------------</del></td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>               | addr of +        |
-</p>
-<p>
-<del>------------------</del>
-</p>
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">addr of EXIT</td>
-</tr>
-</tbody>
-</table>
-<p>
-<del>------------------</del>
-</p>
-
-<p>
-And NEXT just completes the job by, well, in this case just by calling DOUBLE again :-)
-</p>
-
-<p>
-LITERALS -----------------------------------------------------------------&#x2013;&#x2014;
-</p>
-
+<div id="outline-container-orgb7fd272" class="outline-2">
+<h2 id="orgb7fd272"><span class="section-number-2">13</span> Literals</h2>
+<div class="outline-text-2" id="text-13">
 <p>
 The final point I "glossed over" before was how to deal with functions that do anything
 apart from calling other functions.  For example, suppose that DOUBLE was defined like this:
@@ -4913,7 +4242,7 @@ jonesforth.f
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Guido Bartolucci</p>
-<p class="date">Created: 2022-04-06 Wed 22:36</p>
+<p class="date">Created: 2022-04-06 Wed 23:07</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

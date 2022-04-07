@@ -319,15 +319,15 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
         .endm
 #+end_src
 
-        The macro is called NEXT.  That's a FORTH-ism.  It expands to those two instructions.
+        The macro is called =NEXT=.  That's a FORTH-ism.  It expands to those two instructions.
 
-        Every FORTH primitive that we write has to be ended by NEXT.  Think of it kind of like
+        Every FORTH primitive that we write has to be ended by =NEXT=.  Think of it kind of like
         a return.
 
         The above describes what is known as direct threaded code.
 
         To sum up: We compress our function calls down to a list of addresses and use a somewhat
-        magical macro to act as a "jump to next function in the list".  We also use one register (%esi)
+        magical macro to act as a "jump to next function in the list".  We also use one register (=%esi=)
         to act as a kind of instruction pointer, pointing to the next function in the list.
 
         I'll just give you a hint of what is to come by saying that a FORTH definition such as:
@@ -337,7 +337,7 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
 	#+end_example
 
         actually compiles (almost, not precisely but we'll see why in a moment) to a list of
-        function addresses for DOUBLE, DOUBLE and a special function called EXIT to finish off.
+        function addresses for =DOUBLE=, =DOUBLE= and a special function called =EXIT= to finish off.
 
         At this point, REALLY EAGLE-EYED ASSEMBLY EXPERTS are saying "JONES, YOU'VE MADE A MISTAKE!".
 
@@ -346,22 +346,25 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
 * Indirect Threaded Code
 
         It turns out that direct threaded code is interesting but only if you want to just execute
-        a list of functions written in assembly language.  So QUADRUPLE would work only if DOUBLE
-        was an assembly language function.  In the direct threaded code, QUADRUPLE would look like:
+        a list of functions written in assembly language.  So =QUADRUPLE= would work only if =DOUBLE=
+        was an assembly language function.  In the direct threaded code, =QUADRUPLE= would look like:
 
+		#+begin_example
                 +------------------+
                 | addr of DOUBLE  --------------------> (assembly code to do the double)
                 +------------------+                    NEXT
         %esi -> | addr of DOUBLE   |
                 +------------------+
+		#+end_example
 
         We can add an extra indirection to allow us to run both words written in assembly language
         (primitives written for speed) and words written in FORTH themselves as lists of addresses.
 
-        The extra indirection is the reason for the brackets in JMP *(%eax).
+        The extra indirection is the reason for the brackets in =JMP *(%eax)=.
 
-        Let's have a look at how QUADRUPLE and DOUBLE really look in FORTH:
+        Let's have a look at how =QUADRUPLE= and =DOUBLE= really look in FORTH:
 
+		#+begin_example
                 : QUADRUPLE DOUBLE DOUBLE ;
 
                 +------------------+
@@ -389,6 +392,7 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
                                                                                    |    ..            |
                                                                                    | NEXT             |
                                                                                    +------------------+
+		#+end_example
 
         This is the part where you may need an extra cup of tea/coffee/favourite caffeinated
         beverage.  What has changed is that I've added an extra pointer to the beginning of
@@ -397,20 +401,20 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
         assembly language, the "interpreter" just points to the actual assembly code itself.
         They don't need interpreting, they just run.
 
-        In words written in FORTH (like QUADRUPLE and DOUBLE), the codeword points to an interpreter
+        In words written in FORTH (like =QUADRUPLE= and =DOUBLE=), the codeword points to an interpreter
         function.
 
         I'll show you the interpreter function shortly, but let's recall our indirect
-        JMP *(%eax) with the "extra" brackets.  Take the case where we're executing DOUBLE
-        as shown, and DUP has been called.  Note that %esi is pointing to the address of +
+        =JMP *(%eax)= with the "extra" brackets.  Take the case where we're executing =DOUBLE=
+        as shown, and =dup= has been called.  Note that =%esi= is pointing to the address of =+=
 
-        The assembly code for DUP eventually does a NEXT.  That:
+        The assembly code for =DUP= eventually does a =NEXT=.  That:
 
-        (1) reads the address of + into %eax            %eax points to the codeword of +
-        (2) increments %esi by 4
-        (3) jumps to the indirect %eax                  jumps to the address in the codeword of +,
-                                                        ie. the assembly code to implement +
+        1. reads the address of =+= into =%eax=            =%eax= points to the codeword of =+=
+        2. increments =%esi= by 4
+        3. jumps to the indirect =%eaxk                    jumps to the address in the codeword of =+=, ie. the assembly code to implement =+=
 
+		#+begin_example
                 +------------------+
                 | codeword         |
                 +------------------+
@@ -436,8 +440,9 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
                                                                         function   |    ..            |
                                                                                    | NEXT             |
                                                                                    +------------------+
+		#+end_example
 
-        So I hope that I've convinced you that NEXT does roughly what you'd expect.  This is
+        So I hope that I've convinced you that =NEXT= does roughly what you'd expect.  This is
         indirect threaded code.
 
         I've glossed over four things.  I wonder if you can guess without reading on what they are?
@@ -446,13 +451,13 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
         .
         .
 
-        My list of four things are: (1) What does "EXIT" do?  (2) which is related to (1) is how do
-        you call into a function, ie. how does %esi start off pointing at part of QUADRUPLE, but
-        then point at part of DOUBLE.  (3) What goes in the codeword for the words which are written
+        My list of four things are: (1) What does "=EXIT=" do?  (2) which is related to (1) is how do
+        you call into a function, ie. how does =%esi= start off pointing at part of =QUADRUPLE=, but
+        then point at part of =DOUBLE=.  (3) What goes in the codeword for the words which are written
         in FORTH?  (4) How do you compile a function which does anything except call other functions
-        ie. a function which contains a number like : DOUBLE 2 * ; ?
+        ie. a function which contains a number like =: DOUBLE 2 * ;= ?
 
-        THE INTERPRETER AND RETURN STACK ------------------------------------------------------------
+* The Interpreter and Return Stack
 
         Going at these in no particular order, let's talk about issues (3) and (2), the interpreter
         and the return stack.
@@ -464,25 +469,26 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
         machine registers so that the word can then execute at full speed using the indirect
         threaded model above.
 
-        One of the things that needs to happen when QUADRUPLE calls DOUBLE is that we save the old
-        %esi ("instruction pointer") and create a new one pointing to the first word in DOUBLE.
-        Because we will need to restore the old %esi at the end of DOUBLE (this is, after all, like
-        a function call), we will need a stack to store these "return addresses" (old values of %esi).
+        One of the things that needs to happen when =QUADRUPLE= calls =DOUBLE= is that we save the old
+        =%esi= ("instruction pointer") and create a new one pointing to the first word in =DOUBLE=.
+        Because we will need to restore the old =%esi= at the end of =DOUBLE= (this is, after all, like
+        a function call), we will need a stack to store these "return addresses" (old values of =%esi=).
 
         As you will have seen in the background documentation, FORTH has two stacks, an ordinary
         stack for parameters, and a return stack which is a bit more mysterious.  But our return
-        stack is just the stack I talked about in the previous paragraph, used to save %esi when
+        stack is just the stack I talked about in the previous paragraph, used to save =%esi= when
         calling from a FORTH word into another FORTH word.
 
-        In this FORTH, we are using the normal stack pointer (%esp) for the parameter stack.
-        We will use the i386's "other" stack pointer (%ebp, usually called the "frame pointer")
+        In this FORTH, we are using the normal stack pointer (=%esp=) for the parameter stack.
+        We will use the i386's "other" stack pointer (=%ebp=, usually called the "frame pointer")
         for our return stack.
 
-        I've got two macros which just wrap up the details of using %ebp for the return stack.
-        You use them as for example "PUSHRSP %eax" (push %eax on the return stack) or "POPRSP %ebx"
-        (pop top of return stack into %ebx).
-*/
+        I've got two macros which just wrap up the details of using =%ebp= for the return stack.
+        You use them as for example "=PUSHRSP %eax=" (push =%eax= on the return stack) or "=POPRSP %ebx="
+        (pop top of return stack into =%ebx=).
 
+
+#+begin_src asm
 /* Macros to deal with the return stack. */
         .macro PUSHRSP reg
         lea -4(%ebp),%ebp       // push reg on to return stack
@@ -493,21 +499,21 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
         mov (%ebp),\reg         // pop top of return stack to reg
         lea 4(%ebp),%ebp
         .endm
+#+end_src
 
-/*
         And with that we can now talk about the interpreter.
 
-        In FORTH the interpreter function is often called DOCOL (I think it means "DO COLON" because
-        all FORTH definitions start with a colon, as in : DOUBLE DUP + ;
+        In FORTH the interpreter function is often called =DOCOL= (I think it means "DO COLON" because
+        all FORTH definitions start with a colon, as in =: DOUBLE DUP + ;=
 
-        The "interpreter" (it's not really "interpreting") just needs to push the old %esi on the
-        stack and set %esi to the first word in the definition.  Remember that we jumped to the
-        function using JMP *(%eax)?  Well a consequence of that is that conveniently %eax contains
+        The "interpreter" (it's not really "interpreting") just needs to push the old =%esi= on the
+        stack and set =%esi= to the first word in the definition.  Remember that we jumped to the
+        function using =JMP *(%eax)=?  Well a consequence of that is that conveniently =%eax= contains
         the address of this codeword, so just by adding 4 to it we get the address of the first
-        data word.  Finally after setting up %esi, it just does NEXT which causes that first word
+        data word.  Finally after setting up =%esi=, it just does =NEXT= which causes that first word
         to run.
-*/
 
+#+begin_src asm
 /* DOCOL - the interpreter! */
         .text
         .align 4
@@ -516,11 +522,12 @@ DOCOL:
         addl $4,%eax            // %eax points to codeword, so make
         movl %eax,%esi          // %esi point to first data word
         NEXT
+#+end_src
 
-/*
-        Just to make this absolutely clear, let's see how DOCOL works when jumping from QUADRUPLE
-        into DOUBLE:
+        Just to make this absolutely clear, let's see how =DOCOL= works when jumping from =QUADRUPLE=
+        into =DOUBLE=:
 
+		#+begin_example
                 QUADRUPLE:
                 +------------------+
                 | codeword         |
@@ -531,11 +538,13 @@ DOCOL:
                 +------------------+               | addr of DUP      |
                 | addr of EXIT     |               +------------------+
                 +------------------+               | etc.             |
+		#+end_example
 
-        First, the call to DOUBLE calls DOCOL (the codeword of DOUBLE).  DOCOL does this:  It
-        pushes the old %esi on the return stack.  %eax points to the codeword of DOUBLE, so we
-        just add 4 on to it to get our new %esi:
+        First, the call to =DOUBLE= calls =DOCOL= (the codeword of =DOUBLE=).  =DOCOL= does this:  It
+        pushes the old =%esi= on the return stack.  =%eax= points to the codeword of =DOUBLE=, so we
+        just add 4 on to it to get our new =%esi=:
 
+		#+begin_example
                 QUADRUPLE:
                 +------------------+
                 | codeword         |
@@ -546,19 +555,20 @@ stack points -> | addr of DOUBLE   |       + 4 =   +------------------+
                 +------------------+       %esi -> | addr of DUP      |
                 | addr of EXIT     |               +------------------+
                 +------------------+               | etc.             |
+		#+end_example
 
-        Then we do NEXT, and because of the magic of threaded code that increments %esi again
-        and calls DUP.
+        Then we do =NEXT=, and because of the magic of threaded code that increments =%esi= again
+        and calls =DUP=.
 
         Well, it seems to work.
 
-        One minor point here.  Because DOCOL is the first bit of assembly actually to be defined
+        One minor point here.  Because =DOCOL= is the first bit of assembly actually to be defined
         in this file (the others were just macros), and because I usually compile this code with the
-        text segment starting at address 0, DOCOL has address 0.  So if you are disassembling the
+        text segment starting at address 0, =DOCOL= has address 0.  So if you are disassembling the
         code and see a word with a codeword of 0, you will immediately know that the word is
-        written in FORTH (it's not an assembler primitive) and so uses DOCOL as the interpreter.
+        written in FORTH (it's not an assembler primitive) and so uses =DOCOL= as the interpreter.
 
-        STARTING UP ----------------------------------------------------------------------
+* Starting Up
 
         Now let's get down to nuts and bolts.  When we start the program we need to set up
         a few things like the return stack.  But as soon as we can, we want to jump into FORTH
@@ -567,12 +577,12 @@ stack points -> | addr of DOUBLE   |       + 4 =   +------------------+
 
         This is what the set up code does.  Does a tiny bit of house-keeping, sets up the
         separate return stack (NB: Linux gives us the ordinary parameter stack already), then
-        immediately jumps to a FORTH word called QUIT.  Despite its name, QUIT doesn't quit
+        immediately jumps to a FORTH word called =QUIT=.  Despite its name, =QUIT= doesn't quit
         anything.  It resets some internal state and starts reading and interpreting commands.
-        (The reason it is called QUIT is because you can call QUIT from your own FORTH code
+        (The reason it is called =QUIT= is because you can call =QUIT= from your own FORTH code
         to "quit" your program and go back to interpreting).
-*/
 
+#+begin_src asm
 /* Assembler entry point. */
         .text
         .globl _start
@@ -588,13 +598,14 @@ _start:
         .section .rodata
 cold_start:                     // High-level code without a codeword.
         .int QUIT
+#+end_src
 
-/*
-        BUILT-IN WORDS ----------------------------------------------------------------------
+* Built-In Words
 
         Remember our dictionary entries (headers)?  Let's bring those together with the codeword
-        and data words to see how : DOUBLE DUP + ; really looks in memory.
+        and data words to see how =: DOUBLE DUP + ;= really looks in memory.
 
+	  #+begin_example
           pointer to previous word
            ^
            |
@@ -604,15 +615,17 @@ cold_start:                     // High-level code without a codeword.
            ^       len                         pad  codeword      |
            |                                                      V
           LINK in next word                             points to codeword of DUP
+	  #+end_example
         
-        Initially we can't just write ": DOUBLE DUP + ;" (ie. that literal string) here because we
+        Initially we can't just write "=: DOUBLE DUP + ;=" (ie. that literal string) here because we
         don't yet have anything to read the string, break it up at spaces, parse each word, etc. etc.
         So instead we will have to define built-in words using the GNU assembler data constructors
-        (like .int, .byte, .string, .ascii and so on -- look them up in the gas info page if you are
+        (like =.int=, =.byte=, =.string=, =.ascii= and so on -- look them up in the gas info page if you are
         unsure of them).
 
         The long way would be:
 
+	#+begin_example asm
         .int <link to previous word>
         .byte 6                 // len
         .ascii "DOUBLE"         // string
@@ -621,18 +634,22 @@ DOUBLE: .int DOCOL              // codeword
         .int DUP                // pointer to codeword of DUP
         .int PLUS               // pointer to codeword of +
         .int EXIT               // pointer to codeword of EXIT
+	#+end_example
 
         That's going to get quite tedious rather quickly, so here I define an assembler macro
         so that I can just write:
 
+	#+begin_example asm
         defword "DOUBLE",6,,DOUBLE
         .int DUP,PLUS,EXIT
+	#+end_example
 
         and I'll get exactly the same effect.
 
         Don't worry too much about the exact implementation details of this macro - it's complicated!
-*/
 
+
+#+begin_src asm
 /* Flags - these are discussed later. */
         .set F_IMMED,0x80
         .set F_HIDDEN,0x20
@@ -656,15 +673,16 @@ name_\label :
         .int DOCOL              // codeword - the interpreter
         // list of word pointers follow
         .endm
+#+end_src
 
-/*
         Similarly I want a way to write words written in assembly language.  There will be quite a few
         of these to start with because, well, everything has to start in assembly before there's
         enough "infrastructure" to be able to start writing FORTH words, but also I want to define
         some common FORTH words in assembly language for speed, even though I could write them in FORTH.
 
-        This is what DUP looks like in memory:
+        This is what =DUP= looks like in memory:
 
+	  #+begin_example
           pointer to previous word
            ^
            |
@@ -674,11 +692,13 @@ name_\label :
            ^       len              codeword                        which ends with NEXT.
            |
           LINK in next word
+	  #+end_example
 
         Again, for brevity in writing the header I'm going to write an assembler macro called defcode.
         As with defword above, don't worry about the complicated details of the macro.
-*/
 
+
+	#+begin_src asm
         .macro defcode name, namelen, flags=0, label
         .section .rodata
         .align 4
@@ -697,13 +717,15 @@ name_\label :
         .globl code_\label
 code_\label :                   // assembler code follows
         .endm
+	#+end_src
 
-/*
+
         Now some easy FORTH primitives.  These are written in assembly for speed.  If you understand
         i386 assembly language then it is worth reading these.  However if you don't understand assembly
         you can skip the details.
-*/
 
+
+	#+begin_src asm
         defcode "DROP",4,,DROP
         pop %eax                // drop top of stack
         NEXT
@@ -805,13 +827,15 @@ code_\label :                   // assembler code follows
         imull %ebx,%eax
         push %eax               // ignore overflow
         NEXT
+	#+end_src
 
-/*
-        In this FORTH, only /MOD is primitive.  Later we will define the / and MOD words in
-        terms of the primitive /MOD.  The design of the i386 assembly instruction idiv which
+
+        In this FORTH, only =/MOD= is primitive.  Later we will define the =/= and =MOD= words in
+        terms of the primitive =/MOD=.  The design of the i386 assembly instruction =idiv= which
         leaves both quotient and remainder makes this the obvious choice.
-*/
 
+
+	#+begin_src asm
         defcode "/MOD",4,,DIVMOD
         xor %edx,%edx
         pop %ebx
@@ -820,16 +844,16 @@ code_\label :                   // assembler code follows
         push %edx               // push remainder
         push %eax               // push quotient
         NEXT
+	#+end_src
 
-/*
         Lots of comparison operations like =, <, >, etc..
 
         ANS FORTH says that the comparison words should return all (binary) 1's for
         TRUE and all 0's for FALSE.  However this is a bit of a strange convention
         so this FORTH breaks it and returns the more normal (for C programmers ...)
         1 meaning TRUE and 0 meaning FALSE.
-*/
 
+	#+begin_src asm
         defcode "=",1,,EQU      // top two words are equal?
         pop %eax
         pop %ebx
@@ -950,13 +974,14 @@ code_\label :                   // assembler code follows
         defcode "INVERT",6,,INVERT // this is the FORTH bitwise "NOT" function (cf. NEGATE and NOT)
         notl (%esp)
         NEXT
+	#+end_src
 
-/*
-        RETURNING FROM FORTH WORDS ----------------------------------------------------------------------
+* Returning From Forth Words
 
-        Time to talk about what happens when we EXIT a function.  In this diagram QUADRUPLE has called
-        DOUBLE, and DOUBLE is about to exit (look at where %esi is pointing):
+        Time to talk about what happens when we =EXIT= a function.  In this diagram =QUADRUPLE= has called
+        =DOUBLE=, and =DOUBLE= is about to exit (look at where %esi is pointing):
 
+		#+begin_example
                 QUADRUPLE
                 +------------------+
                 | codeword         |
@@ -970,18 +995,20 @@ code_\label :                   // assembler code follows
                                                    +------------------+
                                            %esi -> | addr of EXIT     |
                                                    +------------------+
+		#+end_example
 
-        What happens when the + function does NEXT?  Well, the following code is executed.
-*/
+        What happens when the + function does =NEXT=?  Well, the following code is executed.
 
+	#+begin_example asm
         defcode "EXIT",4,,EXIT
         POPRSP %esi             // pop return stack into %esi
         NEXT
+	#+end_example
 
-/*
-        EXIT gets the old %esi which we saved from before on the return stack, and puts it in %esi.
-        So after this (but just before NEXT) we get:
+        =EXIT= gets the old =%esi= which we saved from before on the return stack, and puts it in =%esi=.
+        So after this (but just before =NEXT=) we get:
 
+		#+begin_example
                 QUADRUPLE
                 +------------------+
                 | codeword         |
@@ -995,10 +1022,11 @@ code_\label :                   // assembler code follows
                                                    +------------------+
                                                    | addr of EXIT     |
                                                    +------------------+
+		#+end_example
 
-        And NEXT just completes the job by, well, in this case just by calling DOUBLE again :-)
+        And =NEXT= just completes the job by, well, in this case just by calling =DOUBLE= again :-)
 
-        LITERALS ----------------------------------------------------------------------
+* Literals
 
         The final point I "glossed over" before was how to deal with functions that do anything
         apart from calling other functions.  For example, suppose that DOUBLE was defined like this:
