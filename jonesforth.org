@@ -1,3 +1,12 @@
+Code to produce a LaTeX file using Pandoc instead of org-mode's built
+in exporter. It should be easier to work with Pandoc's converter, I think,
+and I think I want a generic Pandoc convert for plain tex anyways.
+
+#+BEGIN_SRC shell
+  pandoc -s jonesforth.org -o foo.tex
+#+END_SRC
+
+
 A sometimes minimal FORTH compiler and tutorial for Linux / i386 systems.
 By Richard W.M. Jones <rich@annexia.org> http://annexia.org/forth
 This is PUBLIC DOMAIN (see public domain release statement below).
@@ -159,21 +168,24 @@ Now the tutorial starts in earnest.
 In FORTH as you will know, functions are called "words", and just as in other languages they
 have a name and a definition.  Here are two FORTH words:
 
-#+BEGIN_SRC forth
+#+BEGIN_EXAMPLE forth
         : DOUBLE DUP + ;                \ name is "DOUBLE", definition is "DUP +"
         : QUADRUPLE DOUBLE DOUBLE ;     \ name is "QUADRUPLE", definition is "DOUBLE DOUBLE"
-#+END_SRC
+#+END_EXAMPLE
 
 Words, both built-in ones and ones which the programmer defines later, are stored in a dictionary
 which is just a linked list of dictionary entries.
 
-#+begin_example
+#+begin_src ditaa :file foo.png
         <--- DICTIONARY ENTRY (HEADER) ----------------------->
         +------------------------+--------+---------- - - - - +----------- - - - -
         | LINK POINTER           | LENGTH/| NAME              | DEFINITION
         |                        | FLAGS  |                   |
         +--- (4 bytes) ----------+- byte -+- n bytes  - - - - +----------- - - - -
-#+end_example
+#+end_src
+
+#+RESULTS:
+[[file:foo.png]]
 
 I'll come to the definition of the word later.  For now just look at the header.  The first
 4 bytes are the link pointer.  This points back to the previous word in the dictionary, or, for
@@ -188,7 +200,7 @@ other words, the head of this linked list.
 
 DOUBLE and QUADRUPLE might look like this:
 
-	  #+begin_example
+	  #+begin_src ditaa :file foo.png
           pointer to previous word
            ^
            |
@@ -204,7 +216,10 @@ DOUBLE and QUADRUPLE might look like this:
            |
            |
           LATEST
-	  #+end_example
+	  #+end_src
+
+	  #+RESULTS:
+	  [[file:foo.png]]
 
 You should be able to see from this how you might implement functions to find a word in
 the dictionary (just walk along the dictionary entries starting at LATEST and matching
@@ -349,13 +364,16 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
         a list of functions written in assembly language.  So =QUADRUPLE= would work only if =DOUBLE=
         was an assembly language function.  In the direct threaded code, =QUADRUPLE= would look like:
 
-		#+begin_example
+		#+begin_src ditaa :file foo.png
                 +------------------+
                 | addr of DOUBLE  --------------------> (assembly code to do the double)
                 +------------------+                    NEXT
         %esi -> | addr of DOUBLE   |
                 +------------------+
-		#+end_example
+		#+end_src
+
+		#+RESULTS:
+		[[file:foo.png]]
 
         We can add an extra indirection to allow us to run both words written in assembly language
         (primitives written for speed) and words written in FORTH themselves as lists of addresses.
@@ -364,7 +382,7 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
 
         Let's have a look at how =QUADRUPLE= and =DOUBLE= really look in FORTH:
 
-		#+begin_example
+		#+begin_src ditaa :file foo.png
                 : QUADRUPLE DOUBLE DOUBLE ;
 
                 +------------------+
@@ -392,7 +410,7 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
                                                                                    |    ..            |
                                                                                    | NEXT             |
                                                                                    +------------------+
-		#+end_example
+		#+end_src
 
         This is the part where you may need an extra cup of tea/coffee/favourite caffeinated
         beverage.  What has changed is that I've added an extra pointer to the beginning of
@@ -414,7 +432,7 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
         2. increments =%esi= by 4
         3. jumps to the indirect =%eaxk                    jumps to the address in the codeword of =+=, ie. the assembly code to implement =+=
 
-		#+begin_example
+		#+begin_src ditaa :file foo.png
                 +------------------+
                 | codeword         |
                 +------------------+
@@ -440,7 +458,7 @@ And that brings us to our first piece of actual code!  Well, it's a macro.
                                                                         function   |    ..            |
                                                                                    | NEXT             |
                                                                                    +------------------+
-		#+end_example
+		#+end_src
 
         So I hope that I've convinced you that =NEXT= does roughly what you'd expect.  This is
         indirect threaded code.
