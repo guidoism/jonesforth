@@ -15,6 +15,11 @@ run them against an assembler.
 With this, we should be able to programmatically assemble the pieces of assembly,
 commentary, and binary opcodes into various visualizations.
 
+## Other ports
+
+* [RISC-V 64](https://github.com/jjyr/jonesforth_riscv/)
+* [ARM 64](https://github.com/narenratan/jonesforth_arm64_apl/)
+
 ## Ideas
 
 - Show hex for opcodes, ascii for text, numbers for numbers -- And color code them while displaying the memory layout.

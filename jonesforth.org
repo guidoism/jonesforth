@@ -295,11 +295,11 @@ On an i386 machine it turns out that we can write this interpreter rather easily
 two assembly instructions which turn into just 3 bytes of machine code.  Let's store the
 pointer to the next word to execute in the =%esi= register:
 
-		#+begin_example
+#+begin_example :var guidotype=memory
                 08 00 00 00     <- We're executing this one now.  %esi is the _next_ one to execute.
         %esi -> 1C 00 00 00
                 2C 00 00 00
-		#+end_example
+#+end_example
 
 The all-important i386 instruction is called LODSL (or in Intel manuals, LODSW).  It does
 two things.  Firstly it reads the memory at %esi into the accumulator (%eax).  Secondly it
@@ -325,14 +325,30 @@ which literally make the jump to the next subroutine.
 
 And that brings us to our first piece of actual code!  Well, it's a macro.
 
-
 #+begin_src asm
 /* NEXT macro. */
         .macro NEXT
-        lodsl
-        jmp *(%eax)
+        lodsl           // Load 4 bytes at address esi into eax, then esi += 4
+        jmp *(%eax)     // Jump to the address in eax
         .endm
 #+end_src
+
+This is the RV64 version.
+
+#+begin_src asm
+	.macro NEXT
+	ld a0, 0(s1)    // Load doubleword at address s1 into a0
+	addi s1, s1, 8  // s1 += 8
+	ld t0, 0(a0)    // Load doubleword at address a0 into t0
+	jalr t0         // Jump to address in t0
+	.endm
+#+end_src
+
+This is the MMIX version.
+
+#+begin_src asm
+#+end_src
+
 
         The macro is called =NEXT=.  That's a FORTH-ism.  It expands to those two instructions.
 
