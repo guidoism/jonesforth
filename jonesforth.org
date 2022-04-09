@@ -2436,7 +2436,7 @@ buffer:
         crack-smoking (lack of) multiline string syntax.  So now that is in a separate file called
         jonesforth.f
 
-#+begin_src forth
+#+begin_example forth
 \	START OF Forth CODE ----------------------------------------------------------------------
 \
 \	We've now reached the stage where the Forth system is running and self-hosting.  All further
@@ -4193,5 +4193,5 @@ HIDE =NEXT
 
 WELCOME
 HIDE WELCOME
-#+end_src
+#+end_example
 
