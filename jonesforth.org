@@ -1957,24 +1957,24 @@ _COMMA:
         ret
 	#+end_src
 
-        Our definitions of : (COLON) and ; (SEMICOLON) will need to switch to and from compile mode.
+        Our definitions of =:= (=COLON=) and =;= (=SEMICOLON=) will need to switch to and from compile mode.
 
-        Immediate mode vs. compile mode is stored in the global variable STATE, and by updating this
+        Immediate mode vs. compile mode is stored in the global variable =STATE=, and by updating this
         variable we can switch between the two modes.
 
         For various reasons which may become apparent later, FORTH defines two standard words called
-        [ and ] (LBRAC and RBRAC) which switch between modes:
+        =[= and =]= (=LBRAC= and =RBRAC=) which switch between modes:
 
         Word    Assembler       Action          Effect
         [       LBRAC           STATE := 0      Switch to immediate mode.
         ]       RBRAC           STATE := 1      Switch to compile mode.
 
-        [ (LBRAC) is an IMMEDIATE word.  The reason is as follows: If we are in compile mode and the
+        =[= (=LBRAC=) is an IMMEDIATE word.  The reason is as follows: If we are in compile mode and the
         interpreter saw [ then it would compile it rather than running it.  We would never be able to
         switch back to immediate mode!  So we flag the word as IMMEDIATE so that even in compile mode
         the word runs immediately, switching us back to immediate mode.
-*/
 
+	#+begin_src asm
         defcode "[",1,F_IMMED,LBRAC
         xor %eax,%eax
         movl %eax,var_STATE     // Set STATE to 0.
@@ -1983,12 +1983,12 @@ _COMMA:
         defcode "]",1,,RBRAC
         movl $1,var_STATE       // Set STATE to 1.
         NEXT
+	#+end_src
 
-/*
-        Now we can define : (COLON) using CREATE.  It just calls CREATE, appends DOCOL (the codeword), sets
-        the word HIDDEN and goes into compile mode.
-*/
+        Now we can define =:= (=COLON=) using =CREATE=.  It just calls =CREATE=, appends =DOCOL= (the codeword), sets
+        the word =HIDDEN= and goes into compile mode.
 
+	#+begin_src asm
         defword ":",1,,COLON
         .int WORD               // Get the name of the new word
         .int CREATE             // CREATE the dictionary entry / header
@@ -1996,19 +1996,19 @@ _COMMA:
         .int LATEST, FETCH, HIDDEN // Make the word hidden (see below for definition).
         .int RBRAC              // Go into compile mode.
         .int EXIT               // Return from the function.
+	#+end_src
 
-/*
         ; (SEMICOLON) is also elegantly simple.  Notice the F_IMMED flag.
-*/
 
+	#+begin_src asm
         defword ";",1,F_IMMED,SEMICOLON
         .int LIT, EXIT, COMMA   // Append EXIT (so the word will return).
         .int LATEST, FETCH, HIDDEN // Toggle hidden flag -- unhide the word (see below for definition).
         .int LBRAC              // Go back to IMMEDIATE mode.
         .int EXIT               // Return from the function.
+	#+end_src
 
-/*
-        EXTENDING THE COMPILER ----------------------------------------------------------------------
+* Extending the Compiler
 
         Words flagged with IMMEDIATE (F_IMMED) aren't just for the FORTH compiler to use.  You can define
         your own IMMEDIATE words too, and this is a crucial aspect when extending basic FORTH, because
@@ -2033,15 +2033,15 @@ _COMMA:
         ; IMMEDIATE
 
         The two usages are equivalent, to a first approximation.
-*/
 
+	#+begin_src asm
         defcode "IMMEDIATE",9,F_IMMED,IMMEDIATE
         movl var_LATEST,%edi    // LATEST word.
         addl $4,%edi            // Point to name/flags byte.
         xorb $F_IMMED,(%edi)    // Toggle the IMMED bit.
         NEXT
+	#+end_src
 
-/*
         'addr HIDDEN' toggles the hidden flag (F_HIDDEN) of the word defined at addr.  To hide the
         most recently defined word (used above in : and ; definitions) you would do:
 
@@ -2061,8 +2061,9 @@ _COMMA:
                 HIDE SUB3
 
         After this, only MAIN is 'exported' or seen by the rest of the program.
-*/
 
+
+	#+begin_src asm
         defcode "HIDDEN",6,,HIDDEN
         pop %edi                // Dictionary entry.
         addl $4,%edi            // Point to name/flags byte.
@@ -2074,8 +2075,8 @@ _COMMA:
         .int FIND               // Look up in the dictionary.
         .int HIDDEN             // Set F_HIDDEN flag.
         .int EXIT               // Return.
+	#+end_src
 
-/*
         ' (TICK) is a standard FORTH word which returns the codeword pointer of the next word.
 
         The common usage is:
@@ -2102,14 +2103,15 @@ _COMMA:
         This definition of ' uses a cheat which I copied from buzzard92.  As a result it only works in
         compiled code.  It is possible to write a version of ' based on WORD, FIND, >CFA which works in
         immediate mode too.
-*/
+
+	#+begin_src asm
         defcode "'",1,,TICK
         lodsl                   // Get the address of the next word and skip it.
         pushl %eax              // Push it on the stack.
         NEXT
+	#+end_src
 
-/*
-        BRANCHING ----------------------------------------------------------------------
+* Branching
 
         It turns out that all you need in order to define looping constructs, IF-statements, etc.
         are two primitives.
@@ -2120,6 +2122,7 @@ _COMMA:
         The diagram below shows how BRANCH works in some imaginary compiled word.  When BRANCH executes,
         %esi starts by pointing to the offset field (compare to LIT above):
 
+	#+begin_example
         +---------------------+-------+---- - - ---+------------+------------+---- - - - ----+------------+
         | (Dictionary header) | DOCOL |            | BRANCH     | offset     | (skipped)     | word       |
         +---------------------+-------+---- - - ---+------------+-----|------+---- - - - ----+------------+
@@ -2127,6 +2130,7 @@ _COMMA:
                                                                    |  |                       |
                                                                    |  +-----------------------+
                                                                   %esi added to offset
+	#+end_example
 
         The offset is added to %esi to make the new %esi, and the result is that when NEXT runs, execution
         continues at the branch target.  Negative offsets work as expected.
@@ -2147,8 +2151,8 @@ _COMMA:
                                           |             ^
                                           |             |
                                           +-------------+
-*/
 
+	#+begin_src asm
         defcode "BRANCH",6,,BRANCH
         add (%esi),%esi         // add the offset to the instruction pointer
         NEXT
@@ -2159,17 +2163,17 @@ _COMMA:
         jz code_BRANCH          // if so, jump back to the branch function above
         lodsl                   // otherwise we need to skip the offset
         NEXT
+	#+end_src
 
-/*
-        LITERAL STRINGS ----------------------------------------------------------------------
+* Literal Strings
 
         LITSTRING is a primitive used to implement the ." and S" operators (which are written in
         FORTH).  See the definition of those operators later.
 
         TELL just prints a string.  It's more efficient to define this in assembly because we
         can make it a single Linux syscall.
-*/
 
+	#+begin_src asm
         defcode "LITSTRING",9,,LITSTRING
         lodsl                   // get the length of the string
         push %esi               // push the address of the start of the string
@@ -2186,9 +2190,9 @@ _COMMA:
         mov $__NR_write,%eax    // write syscall
         int $0x80
         NEXT
+	#+end_src
 
-/*
-        QUIT AND INTERPRET ----------------------------------------------------------------------
+* Quit and Interpret
 
         QUIT is the first FORTH function called, almost immediately after the FORTH system "boots".
         As explained before, QUIT doesn't "quit" anything.  It does some initialisation (in particular
@@ -2198,18 +2202,19 @@ _COMMA:
 
         INTERPRET is the FORTH interpreter ("toploop", "toplevel" or "REPL" might be a more accurate
         description -- see: http://en.wikipedia.org/wiki/REPL).
-*/
 
+	#+begin_src asm
         // QUIT must not return (ie. must not call EXIT).
         defword "QUIT",4,,QUIT
         .int RZ,RSPSTORE        // R0 RSP!, clear the return stack
         .int INTERPRET          // interpret the next word
         .int BRANCH,-8          // and loop (indefinitely)
+	#+end_src
 
-/*
         This interpreter is pretty simple, but remember that in FORTH you can always override
         it later with a more powerful one!
- */
+
+	#+begin_src asm
         defcode "INTERPRET",9,,INTERPRET
         call _WORD              // Returns %ecx = length, %edi = pointer to word.
 
@@ -2301,9 +2306,9 @@ errmsgnl: .ascii "\n"
         .align 4
 interpret_is_lit:
         .int 0                  // Flag used to record if reading a literal
+	#+end_src
 
-/*
-        ODDS AND ENDS ----------------------------------------------------------------------
+* Odds and Ends
 
         CHAR puts the ASCII code of the first character of the following word on the stack.  For example
         CHAR A puts 65 on the stack.
@@ -2318,8 +2323,8 @@ interpret_is_lit:
         In this FORTH, SYSCALL0 must be the last word in the built-in (assembler) dictionary because we
         initialise the LATEST variable to point to it.  This means that if you want to extend the assembler
         part, you must put new words before SYSCALL0, or else change how LATEST is initialised.
-*/
 
+	#+begin_src asm
         defcode "CHAR",4,,CHAR
         call _WORD              // Returns %ecx = length, %edi = pointer to word.
         xor %eax,%eax
@@ -2361,9 +2366,9 @@ interpret_is_lit:
         int $0x80
         push %eax               // Result (negative for -errno)
         NEXT
+	#+end_src
 
-/*
-        DATA SEGMENT ----------------------------------------------------------------------
+* Data Segment
 
         Here we set up the Linux data segment, used for user definitions and variously known as just
         the 'data segment', 'user memory' or 'user definitions area'.  It is an area of memory which
@@ -2385,7 +2390,8 @@ interpret_is_lit:
         using the brk(2) system call, then ask it to reserve some initial space (also using brk(2)).
 
         You don't need to worry about this code.
-*/
+
+	#+begin_src asm
         .text
         .set INITIAL_DATA_SEGMENT_SIZE,65536
 set_up_data_segment:
@@ -2398,11 +2404,13 @@ set_up_data_segment:
         movl $__NR_brk,%eax
         int $0x80
         ret
+	#+end_src
 
-/*
+
         We allocate static buffers for the return static and input buffer (used when
         reading in files and text that the user types in).
-*/
+
+	#+begin_src asm
         .set RETURN_STACK_SIZE,8192
         .set BUFFER_SIZE,4096
 
@@ -2417,9 +2425,9 @@ return_stack_top:               // Initial top of return stack.
         .align 4096
 buffer:
         .space BUFFER_SIZE
+	#+end_src
 
-/*
-        START OF FORTH CODE ----------------------------------------------------------------------
+* Start of FORTH Code
 
         We've now reached the stage where the FORTH system is running and self-hosting.  All further
         words can be written as FORTH itself, including words like IF, THEN, .", etc which in most
@@ -2431,7 +2439,4 @@ buffer:
 
         If you don't already have that file, download it from http://annexia.org/forth in order
         to continue the tutorial.
-*/
 
-
-/* END OF jonesforth.S */
