@@ -443,9 +443,9 @@ Let's have a look at how =QUADRUPLE= and =DOUBLE= really look in Forth:
 
         The assembly code for =DUP= eventually does a =NEXT=.  That:
 
-        1. reads the address of =+= into =%eax=            =%eax= points to the codeword of =+=
+        1. reads the address of =+= into =%eax=  (=%eax= points to the codeword of =+=)
         2. increments =%esi= by 4
-        3. jumps to the indirect =%eaxk                    jumps to the address in the codeword of =+=, ie. the assembly code to implement =+=
+        3. jumps to the indirect =%eax=          (jumps to the address in the codeword of =+=, ie. the assembly code to implement =+=)
 
 		#+begin_src ditaa :file 5.png
                 +------------------+
