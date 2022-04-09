@@ -193,13 +193,13 @@ which is just a linked list of dictionary entries.
 
 I'll come to the definition of the word later.  For now just look at the header.  The first
 4 bytes are the link pointer.  This points back to the previous word in the dictionary, or, for
-the first word in the dictionary it is just a NULL pointer.  Then comes a length/flags byte.
+the first word in the dictionary it is just a null pointer.  Then comes a length/flags byte.
 The length of the word can be up to 31 characters (5 bits used) and the top three bits are used
 for various flags which I'll come to later.  This is followed by the name itself, and in this
 implementation the name is rounded up to a multiple of 4 bytes by padding it with zero bytes.
 That's just to ensure that the definition starts on a 32 bit boundary.
 
-A Forth variable called LATEST contains a pointer to the most recently defined word, in
+A Forth variable called =LATEST= contains a pointer to the most recently defined word, in
 other words, the head of this linked list.
 
 DOUBLE and QUADRUPLE might look like this:
@@ -226,10 +226,10 @@ DOUBLE and QUADRUPLE might look like this:
 	  [[file:foo.png]]
 
 You should be able to see from this how you might implement functions to find a word in
-the dictionary (just walk along the dictionary entries starting at LATEST and matching
-the names until you either find a match or hit the NULL pointer at the end of the dictionary);
-and add a word to the dictionary (create a new definition, set its LINK to LATEST, and set
-LATEST to point to the new word).  We'll see precisely these functions implemented in
+the dictionary (just walk along the dictionary entries starting at =LATEST= and matching
+the names until you either find a match or hit the null pointer at the end of the dictionary);
+and add a word to the dictionary (create a new definition, set its =LINK= to =LATEST=, and set
+=LATEST= to point to the new word).  We'll see precisely these functions implemented in
 assembly code later on.
 
 One interesting consequence of using a linked list is that you can redefine words, and
@@ -261,7 +261,7 @@ language would be completely useless!)  So in our peculiar C, code would look li
         }
 	#+end_example
 
-and so on.  How would a function, say 'f' above, be compiled by a standard C compiler?
+and so on.  How would a function, say =f= above, be compiled by a standard C compiler?
 Probably into assembly code like this.  On the right hand side I've written the actual
 i386 machine code.
 
@@ -273,9 +273,9 @@ i386 machine code.
           ; ignore the return from the function for now
 	#+end_example
 
-"=E8=" is the x86 machine code to "CALL" a function.  In the first 20 years of computing
+"=E8=" is the x86 machine code to =CALL= a function.  In the first 20 years of computing
 memory was hideously expensive and we might have worried about the wasted space being used
-by the repeated "E8" bytes.  We can save 20% in code size (and therefore, in expensive memory)
+by the repeated =E8= bytes.  We can save 20% in code size (and therefore, in expensive memory)
 by compressing this into just:
 
 	#+begin_example
@@ -305,9 +305,9 @@ pointer to the next word to execute in the =%esi= register:
                 2C 00 00 00
 #+end_example
 
-The all-important i386 instruction is called LODSL (or in Intel manuals, LODSW).  It does
-two things.  Firstly it reads the memory at %esi into the accumulator (%eax).  Secondly it
-increments %esi by 4 bytes.  So after LODSL, the situation now looks like this:
+The all-important i386 instruction is called =LODSL= (or in Intel manuals, =LODSW=).  It does
+two things.  Firstly it reads the memory at =%esi= into the accumulator (=%eax=).  Secondly it
+increments =%esi= by 4 bytes.  So after =LODSL=, the situation now looks like this:
 
 		#+begin_example
                 08 00 00 00     <- We're still executing this one
@@ -315,7 +315,7 @@ increments %esi by 4 bytes.  So after LODSL, the situation now looks like this:
         %esi -> 2C 00 00 00
 		#+end_example
 
-Now we just need to jump to the address in %eax.  This is again just a single x86 instruction
+Now we just need to jump to the address in =%eax=.  This is again just a single x86 instruction
 written =JMP *(%eax)=.  And after doing the jump, the situation looks like:
 
 		#+begin_example
@@ -348,11 +348,6 @@ This is the RV64 version.
 	.endm
 #+end_src
 
-This is the MMIX version.
-
-#+begin_src asm
-#+end_src
-
 
 The macro is called =NEXT=.  That's a Forth-ism.  It expands to those two instructions.
 
@@ -374,15 +369,15 @@ I'll just give you a hint of what is to come by saying that a Forth definition s
 actually compiles (almost, not precisely but we'll see why in a moment) to a list of
 function addresses for =DOUBLE=, =DOUBLE= and a special function called =EXIT= to finish off.
 
-At this point, REALLY EAGLE-EYED ASSEMBLY EXPERTS are saying "JONES, YOU'VE MADE A MISTAKE!".
+At this point, /really eagle-eyed assembly experts/ are saying "/Jones, you've made a mistake!/".
 
 I lied about =JMP *(%eax)=.
 
 * Indirect Threaded Code
 
-        It turns out that direct threaded code is interesting but only if you want to just execute
-        a list of functions written in assembly language.  So =QUADRUPLE= would work only if =DOUBLE=
-        was an assembly language function.  In the direct threaded code, =QUADRUPLE= would look like:
+It turns out that direct threaded code is interesting but only if you want to just execute
+a list of functions written in assembly language.  So =QUADRUPLE= would work only if =DOUBLE=
+was an assembly language function.  In the direct threaded code, =QUADRUPLE= would look like:
 
 		#+begin_src ditaa :file 3.png
                 +------------------+
@@ -395,12 +390,12 @@ I lied about =JMP *(%eax)=.
 		#+RESULTS:
 		[[file:foo.png]]
 
-        We can add an extra indirection to allow us to run both words written in assembly language
-        (primitives written for speed) and words written in Forth themselves as lists of addresses.
+We can add an extra indirection to allow us to run both words written in assembly language
+(primitives written for speed) and words written in Forth themselves as lists of addresses.
 
-        The extra indirection is the reason for the brackets in =JMP *(%eax)=.
+The extra indirection is the reason for the brackets in =JMP *(%eax)=.
 
-        Let's have a look at how =QUADRUPLE= and =DOUBLE= really look in Forth:
+Let's have a look at how =QUADRUPLE= and =DOUBLE= really look in Forth:
 
 		#+begin_src ditaa :file 4.png
                 : QUADRUPLE DOUBLE DOUBLE ;
@@ -614,7 +609,7 @@ stack points -> | addr of DOUBLE   |       + 4 =   +------------------+
         assembly language primitives).
 
         This is what the set up code does.  Does a tiny bit of house-keeping, sets up the
-        separate return stack (NB: Linux gives us the ordinary parameter stack already), then
+        separate return stack (/NB/: Linux gives us the ordinary parameter stack already), then
         immediately jumps to a Forth word called =QUIT=.  Despite its name, =QUIT= doesn't quit
         anything.  It resets some internal state and starts reading and interpreting commands.
         (The reason it is called =QUIT= is because you can call =QUIT= from your own Forth code
@@ -887,9 +882,9 @@ code_\label :                   // assembler code follows
         Lots of comparison operations like =, <, >, etc..
 
         ANS Forth says that the comparison words should return all (binary) 1's for
-        TRUE and all 0's for FALSE.  However this is a bit of a strange convention
+        True and all 0's for False.  However this is a bit of a strange convention
         so this Forth breaks it and returns the more normal (for C programmers ...)
-        1 meaning TRUE and 0 meaning FALSE.
+        1 meaning True and 0 meaning False.
 
 	#+begin_src asm
         defcode "=",1,,EQU      // top two words are equal?
