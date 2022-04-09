@@ -2013,7 +2013,7 @@ _COMMA:
         your own =IMMEDIATE= words too, and this is a crucial aspect when extending basic Forth, because
         it allows you in effect to extend the compiler itself.  Does gcc let you do that?
 
-        Standard Forth words like =IF=, =WHILE=, =.= and so on are all written as extensions to the basic
+        Standard Forth words like =IF=, =WHILE=, =."= and so on are all written as extensions to the basic
         compiler, and are all =IMMEDIATE= words.
 
         The =IMMEDIATE= word toggles the =F_IMMED= (=IMMEDIATE= flag) on the most recently defined word,
@@ -2122,14 +2122,14 @@ _COMMA:
 
 * Branching
 
-        It turns out that all you need in order to define looping constructs, IF-statements, etc.
+        It turns out that all you need in order to define looping constructs, if-statements, etc.
         are two primitives.
 
-        BRANCH is an unconditional branch. 0BRANCH is a conditional branch (it only branches if the
+        =BRANCH= is an unconditional branch. =0BRANCH= is a conditional branch (it only branches if the
         top of stack is zero).
 
-        The diagram below shows how BRANCH works in some imaginary compiled word.  When BRANCH executes,
-        %esi starts by pointing to the offset field (compare to LIT above):
+        The diagram below shows how =BRANCH= works in some imaginary compiled word.  When =BRANCH= executes,
+        =%esi= starts by pointing to the offset field (compare to =LIT= above):
 
 	#+begin_example
         +---------------------+-------+---- - - ---+------------+------------+---- - - - ----+------------+
@@ -2141,25 +2141,29 @@ _COMMA:
                                                                   %esi added to offset
 	#+end_example
 
-        The offset is added to %esi to make the new %esi, and the result is that when NEXT runs, execution
+        The offset is added to %esi to make the new =%esi=, and the result is that when =NEXT= runs, execution
         continues at the branch target.  Negative offsets work as expected.
 
-        0BRANCH is the same except the branch happens conditionally.
+        =0BRANCH= is the same except the branch happens conditionally.
 
-        Now standard Forth words such as IF, THEN, ELSE, WHILE, REPEAT, etc. can be implemented entirely
-        in Forth.  They are IMMEDIATE words which append various combinations of BRANCH or 0BRANCH
+        Now standard Forth words such as =IF=, =THEN=, =ELSE=, =WHILE=, =REPEAT=, etc. can be implemented entirely
+        in Forth.  They are =IMMEDIATE= words which append various combinations of =BRANCH= or =0BRANCH=
         into the word currently being compiled.
 
         As an example, code written like this:
 
+		#+begin_example
                 condition-code IF true-part THEN rest-code
+		#+end_example
 
         compiles to:
 
+		#+begin_example
                 condition-code 0BRANCH OFFSET true-part rest-code
                                           |             ^
                                           |             |
                                           +-------------+
+		#+end_example
 
 	#+begin_src asm
         defcode "BRANCH",6,,BRANCH
@@ -2176,10 +2180,10 @@ _COMMA:
 
 * Literal Strings
 
-        LITSTRING is a primitive used to implement the ." and S" operators (which are written in
+        =LITSTRING= is a primitive used to implement the =."= and =S"= operators (which are written in
         Forth).  See the definition of those operators later.
 
-        TELL just prints a string.  It's more efficient to define this in assembly because we
+        =TELL= just prints a string.  It's more efficient to define this in assembly because we
         can make it a single Linux syscall.
 
 	#+begin_src asm
@@ -2203,13 +2207,13 @@ _COMMA:
 
 * Quit and Interpret
 
-        QUIT is the first Forth function called, almost immediately after the Forth system "boots".
-        As explained before, QUIT doesn't "quit" anything.  It does some initialisation (in particular
-        it clears the return stack) and it calls INTERPRET in a loop to interpret commands.  The
-        reason it is called QUIT is because you can call it from your own Forth words in order to
+        =QUIT= is the first Forth function called, almost immediately after the Forth system "boots".
+        As explained before, =QUIT= doesn't "quit" anything.  It does some initialisation (in particular
+        it clears the return stack) and it calls =INTERPRET= in a loop to interpret commands.  The
+        reason it is called =QUIT= is because you can call it from your own Forth words in order to
         "quit" your program and start again at the user prompt.
 
-        INTERPRET is the Forth interpreter ("toploop", "toplevel" or "REPL" might be a more accurate
+        =INTERPRET= is the Forth interpreter ("toploop", "toplevel" or "REPL" might be a more accurate
         description -- see: http://en.wikipedia.org/wiki/REPL).
 
 	#+begin_src asm
@@ -2319,19 +2323,19 @@ interpret_is_lit:
 
 * Odds and Ends
 
-        CHAR puts the ASCII code of the first character of the following word on the stack.  For example
-        CHAR A puts 65 on the stack.
+        =CHAR= puts the ASCII code of the first character of the following word on the stack.  For example
+        =CHAR A= puts 65 on the stack.
 
-        EXECUTE is used to run execution tokens.  See the discussion of execution tokens in the
+        =EXECUTE= is used to run execution tokens.  See the discussion of execution tokens in the
         Forth code for more details.
 
-        SYSCALL0, SYSCALL1, SYSCALL2, SYSCALL3 make a standard Linux system call.  (See <asm/unistd.h>
+        =SYSCALL0=, =SYSCALL1=, =SYSCALL2=, =SYSCALL3= make a standard Linux system call.  (See <asm/unistd.h>
         for a list of system call numbers).  As their name suggests these forms take between 0 and 3
         syscall parameters, plus the system call number.
 
-        In this Forth, SYSCALL0 must be the last word in the built-in (assembler) dictionary because we
-        initialise the LATEST variable to point to it.  This means that if you want to extend the assembler
-        part, you must put new words before SYSCALL0, or else change how LATEST is initialised.
+        In this Forth, =SYSCALL0= must be the last word in the built-in (assembler) dictionary because we
+        initialise the =LATEST= variable to point to it.  This means that if you want to extend the assembler
+        part, you must put new words before =SYSCALL0=, or else change how =LATEST= is initialised.
 
 	#+begin_src asm
         defcode "CHAR",4,,CHAR
@@ -2380,13 +2384,13 @@ interpret_is_lit:
 * Data Segment
 
         Here we set up the Linux data segment, used for user definitions and variously known as just
-        the 'data segment', 'user memory' or 'user definitions area'.  It is an area of memory which
+        the /data segment/, /user memory/ or /user definitions area/.  It is an area of memory which
         grows upwards and stores both newly-defined Forth words and global variables of various
         sorts.
 
-        It is completely analogous to the C heap, except there is no generalised 'malloc' and 'free'
+        It is completely analogous to the C heap, except there is no generalised =malloc= and =free=
         (but as with everything in Forth, writing such functions would just be a Simple Matter
-        Of Programming).  Instead in normal use the data segment just grows upwards as new Forth
+        of Programming).  Instead in normal use the data segment just grows upwards as new Forth
         words are defined/appended to it.
 
         There are various "features" of the GNU toolchain which make setting up the data segment
@@ -2396,7 +2400,7 @@ interpret_is_lit:
 
         Therefore writing this set_up_data_segment assembler routine is a little more complicated
         than it really needs to be.  We ask the Linux kernel where it thinks the data segment starts
-        using the brk(2) system call, then ask it to reserve some initial space (also using brk(2)).
+        using the =brk(2)= system call, then ask it to reserve some initial space (also using =brk(2)=).
 
         You don't need to worry about this code.
 
@@ -2439,7 +2443,7 @@ buffer:
 * Start of Forth Code
 
         We've now reached the stage where the Forth system is running and self-hosting.  All further
-        words can be written as Forth itself, including words like IF, THEN, .", etc which in most
+        words can be written as Forth itself, including words like =IF=, =THEN=, =."=, etc which in most
         languages would be considered rather fundamental.
 
         I used to append this here in the assembly file, but I got sick of fighting against gas's
