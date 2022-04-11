@@ -189,7 +189,7 @@ which is just a linked list of dictionary entries.
 #+end_src
 
 #+RESULTS:
-[[file:foo.png]]
+[[file:1.png]]
 
 I'll come to the definition of the word later.  For now just look at the header.  The first
 4 bytes are the link pointer.  This points back to the previous word in the dictionary, or, for
@@ -223,7 +223,7 @@ DOUBLE and QUADRUPLE might look like this:
 	  #+end_src
 
 	  #+RESULTS:
-	  [[file:foo.png]]
+	  [[file:2.png]]
 
 You should be able to see from this how you might implement functions to find a word in
 the dictionary (just walk along the dictionary entries starting at =LATEST= and matching
@@ -388,7 +388,7 @@ was an assembly language function.  In the direct threaded code, =QUADRUPLE= wou
 		#+end_src
 
 		#+RESULTS:
-		[[file:foo.png]]
+		[[file:3.png]]
 
 We can add an extra indirection to allow us to run both words written in assembly language
 (primitives written for speed) and words written in Forth themselves as lists of addresses.
@@ -426,6 +426,9 @@ Let's have a look at how =QUADRUPLE= and =DOUBLE= really look in Forth:
                                                                                    | NEXT             |
                                                                                    +------------------+
 		#+end_src
+
+		#+RESULTS:
+		[[file:4.png]]
 
         This is the part where you may need an extra cup of tea/coffee/favourite caffeinated
         beverage.  What has changed is that I've added an extra pointer to the beginning of
@@ -474,6 +477,9 @@ Let's have a look at how =QUADRUPLE= and =DOUBLE= really look in Forth:
                                                                                    | NEXT             |
                                                                                    +------------------+
 		#+end_src
+
+		#+RESULTS:
+		[[file:5.png]]
 
         So I hope that I've convinced you that =NEXT= does roughly what you'd expect.  This is
         indirect threaded code.
